@@ -1,0 +1,1 @@
+-- Baseline migration: existing schema applied manually before Prisma was introduced.

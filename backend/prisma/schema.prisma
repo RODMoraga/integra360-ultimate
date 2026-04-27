@@ -1,0 +1,998 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model audit_logs {
+  id          BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id  BigInt?                @db.UnsignedBigInt
+  table_name  String                 @db.VarChar(120)
+  row_pk      String                 @db.VarChar(120)
+  action_type audit_logs_action_type
+  changed_by  BigInt?                @db.UnsignedBigInt
+  changed_at  DateTime               @default(now()) @db.DateTime(0)
+  old_data    Json?
+  new_data    Json?
+  ip_address  String?                @db.VarChar(64)
+  user_agent  String?                @db.VarChar(255)
+
+  @@index([changed_by], map: "idx_audit_logs_changed_by")
+  @@index([company_id, changed_at, action_type], map: "idx_audit_logs_company_date_action")
+  @@index([company_id, table_name, changed_at], map: "idx_audit_logs_company_table_date")
+  @@index([table_name, row_pk], map: "idx_audit_logs_table_pk")
+}
+
+model brands {
+  id         BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id BigInt     @db.UnsignedBigInt
+  code       String     @db.VarChar(40)
+  name       String     @db.VarChar(120)
+  created_at DateTime   @default(now()) @db.DateTime(0)
+  updated_at DateTime   @default(now()) @db.DateTime(0)
+  deleted_at DateTime?  @db.DateTime(0)
+  companies  companies  @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_brands_company")
+  models     models[]
+  products   products[]
+
+  @@unique([company_id, code], map: "uk_brands_company_code")
+  @@index([company_id, name], map: "idx_brands_company_name")
+}
+
+model cash_closings {
+  id                BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id        BigInt        @db.UnsignedBigInt
+  cash_opening_id   BigInt        @db.UnsignedBigInt
+  user_id           BigInt        @db.UnsignedBigInt
+  closed_at         DateTime      @default(now()) @db.DateTime(0)
+  expected_amount   Decimal       @db.Decimal(18, 4)
+  counted_amount    Decimal       @db.Decimal(18, 4)
+  difference_amount Decimal       @db.Decimal(18, 4)
+  note              String?       @db.VarChar(255)
+  created_at        DateTime      @default(now()) @db.DateTime(0)
+  companies         companies     @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_closings_company")
+  cash_openings     cash_openings @relation(fields: [cash_opening_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_closings_opening")
+  users             users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_closings_user")
+
+  @@index([cash_opening_id], map: "fk_cash_closings_opening")
+  @@index([user_id], map: "fk_cash_closings_user")
+  @@index([company_id, cash_opening_id], map: "idx_cash_closings_company_opening")
+}
+
+model cash_movements {
+  id              BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id      BigInt                       @db.UnsignedBigInt
+  cash_opening_id BigInt                       @db.UnsignedBigInt
+  movement_type   cash_movements_movement_type
+  amount          Decimal                      @db.Decimal(18, 4)
+  reason          String                       @db.VarChar(255)
+  reference_type  String?                      @db.VarChar(40)
+  reference_id    BigInt?                      @db.UnsignedBigInt
+  moved_at        DateTime                     @default(now()) @db.DateTime(0)
+  created_by      BigInt?                      @db.UnsignedBigInt
+  created_at      DateTime                     @default(now()) @db.DateTime(0)
+  companies       companies                    @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_movements_company")
+  cash_openings   cash_openings                @relation(fields: [cash_opening_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_movements_opening")
+
+  @@index([cash_opening_id], map: "fk_cash_movements_opening")
+  @@index([company_id, moved_at], map: "idx_cash_movements_company_date")
+  @@index([company_id, cash_opening_id], map: "idx_cash_movements_company_opening")
+}
+
+model cash_openings {
+  id               BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id       BigInt               @db.UnsignedBigInt
+  cash_register_id BigInt               @db.UnsignedBigInt
+  user_id          BigInt               @db.UnsignedBigInt
+  opened_at        DateTime             @default(now()) @db.DateTime(0)
+  opening_amount   Decimal              @db.Decimal(18, 4)
+  note             String?              @db.VarChar(255)
+  status           cash_openings_status @default(OPEN)
+  created_at       DateTime             @default(now()) @db.DateTime(0)
+  updated_at       DateTime             @default(now()) @db.DateTime(0)
+  cash_closings    cash_closings[]
+  cash_movements   cash_movements[]
+  companies        companies            @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_openings_company")
+  cash_registers   cash_registers       @relation(fields: [cash_register_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_openings_register")
+  users            users                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_openings_user")
+  sales            sales[]
+
+  @@index([cash_register_id], map: "fk_cash_openings_register")
+  @@index([user_id], map: "fk_cash_openings_user")
+  @@index([company_id, cash_register_id, status], map: "idx_cash_openings_company_register_status")
+}
+
+model cash_registers {
+  id            BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id    BigInt          @db.UnsignedBigInt
+  terminal_id   BigInt          @db.UnsignedBigInt
+  code          String          @db.VarChar(40)
+  name          String          @db.VarChar(120)
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now()) @db.DateTime(0)
+  updated_at    DateTime        @default(now()) @db.DateTime(0)
+  deleted_at    DateTime?       @db.DateTime(0)
+  cash_openings cash_openings[]
+  companies     companies       @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_registers_company")
+  pos_terminals pos_terminals   @relation(fields: [terminal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cash_registers_terminal")
+
+  @@unique([company_id, code], map: "uk_cash_registers_company_code")
+  @@index([terminal_id], map: "fk_cash_registers_terminal")
+  @@index([company_id, terminal_id], map: "idx_cash_registers_company_terminal")
+}
+
+model categories {
+  id            BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id    BigInt          @db.UnsignedBigInt
+  code          String          @db.VarChar(40)
+  name          String          @db.VarChar(120)
+  description   String?         @db.VarChar(255)
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now()) @db.DateTime(0)
+  updated_at    DateTime        @default(now()) @db.DateTime(0)
+  deleted_at    DateTime?       @db.DateTime(0)
+  companies     companies       @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_categories_company")
+  products      products[]
+  subcategories subcategories[]
+
+  @@unique([company_id, code], map: "uk_categories_company_code")
+  @@index([company_id, name], map: "idx_categories_company_name")
+}
+
+model cities {
+  id         BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  region_id  BigInt     @db.UnsignedBigInt
+  code       String     @db.VarChar(20)
+  name       String     @db.VarChar(120)
+  created_at DateTime   @default(now()) @db.DateTime(0)
+  updated_at DateTime   @default(now()) @db.DateTime(0)
+  regions    regions    @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cities_region")
+  communes   communes[]
+
+  @@unique([region_id, code], map: "uk_cities_region_code")
+  @@index([region_id], map: "idx_cities_region")
+}
+
+model communes {
+  id          BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  city_id     BigInt       @db.UnsignedBigInt
+  code        String       @db.VarChar(20)
+  name        String       @db.VarChar(120)
+  postal_code String?      @db.VarChar(20)
+  created_at  DateTime     @default(now()) @db.DateTime(0)
+  updated_at  DateTime     @default(now()) @db.DateTime(0)
+  cities      cities       @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_communes_city")
+  companies   companies[]
+  customers   customers[]
+  suppliers   suppliers[]
+  warehouses  warehouses[]
+
+  @@unique([city_id, code], map: "uk_communes_city_code")
+  @@index([city_id], map: "idx_communes_city")
+}
+
+model companies {
+  id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  code                String                @unique(map: "uk_companies_code") @db.VarChar(40)
+  legal_name          String                @db.VarChar(180)
+  trade_name          String?               @db.VarChar(180)
+  tax_id              String                @unique(map: "uk_companies_tax_id") @db.VarChar(30)
+  industry_type       String?               @db.VarChar(60)
+  email               String?               @db.VarChar(160)
+  phone               String?               @db.VarChar(40)
+  address_line        String?               @db.VarChar(220)
+  commune_id          BigInt?               @db.UnsignedBigInt
+  timezone            String                @default("America/Santiago") @db.VarChar(80)
+  currency_code       String                @default("CLP") @db.Char(3)
+  is_active           Boolean               @default(true)
+  created_at          DateTime              @default(now()) @db.DateTime(0)
+  updated_at          DateTime              @default(now()) @db.DateTime(0)
+  deleted_at          DateTime?             @db.DateTime(0)
+  created_by          BigInt?               @db.UnsignedBigInt
+  brands              brands[]
+  cash_closings       cash_closings[]
+  cash_movements      cash_movements[]
+  cash_openings       cash_openings[]
+  cash_registers      cash_registers[]
+  categories          categories[]
+  communes            communes?             @relation(fields: [commune_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_companies_commune")
+  customer_contacts   customer_contacts[]
+  customers           customers[]
+  digital_assets      digital_assets[]
+  document_details    document_details[]
+  document_sequences  document_sequences[]
+  documents           documents[]
+  inventory           inventory[]
+  inventory_movements inventory_movements[]
+  models              models[]
+  payment_methods     payment_methods[]
+  pos_terminals       pos_terminals[]
+  product_images      product_images[]
+  product_variants    product_variants[]
+  products            products[]
+  roles               roles[]
+  sale_details        sale_details[]
+  sale_payments       sale_payments[]
+  sales               sales[]
+  subcategories       subcategories[]
+  supplier_contacts   supplier_contacts[]
+  suppliers           suppliers[]
+  unit_conversions    unit_conversions[]
+  units_of_measure    units_of_measure[]
+  user_sessions       user_sessions[]
+  users               users[]
+  warehouses          warehouses[]
+
+  @@index([commune_id], map: "fk_companies_commune")
+  @@index([is_active], map: "idx_companies_active")
+}
+
+model customer_contacts {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id  BigInt    @db.UnsignedBigInt
+  customer_id BigInt    @db.UnsignedBigInt
+  full_name   String    @db.VarChar(140)
+  email       String?   @db.VarChar(160)
+  phone       String?   @db.VarChar(40)
+  role_name   String?   @db.VarChar(80)
+  is_primary  Boolean   @default(false)
+  created_at  DateTime  @default(now()) @db.DateTime(0)
+  updated_at  DateTime  @default(now()) @db.DateTime(0)
+  deleted_at  DateTime? @db.DateTime(0)
+  companies   companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_customer_contacts_company")
+  customers   customers @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_customer_contacts_customer")
+
+  @@index([customer_id], map: "fk_customer_contacts_customer")
+  @@index([company_id, customer_id], map: "idx_customer_contacts_company_customer")
+}
+
+model customers {
+  id                 BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt              @db.UnsignedBigInt
+  code               String              @db.VarChar(40)
+  tax_id             String?             @db.VarChar(30)
+  legal_name         String              @db.VarChar(180)
+  business_activity  String?             @db.VarChar(120)
+  email              String?             @db.VarChar(160)
+  phone              String?             @db.VarChar(40)
+  address_line       String?             @db.VarChar(220)
+  commune_id         BigInt?             @db.UnsignedBigInt
+  payment_terms_days Int                 @default(0) @db.UnsignedSmallInt
+  credit_limit       Decimal             @default(0.0000) @db.Decimal(18, 4)
+  is_active          Boolean             @default(true)
+  created_at         DateTime            @default(now()) @db.DateTime(0)
+  updated_at         DateTime            @default(now()) @db.DateTime(0)
+  deleted_at         DateTime?           @db.DateTime(0)
+  created_by         BigInt?             @db.UnsignedBigInt
+  customer_contacts  customer_contacts[]
+  communes           communes?           @relation(fields: [commune_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_customers_commune")
+  companies          companies           @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_customers_company")
+  documents          documents[]
+  sales              sales[]
+
+  @@unique([company_id, code], map: "uk_customers_company_code")
+  @@index([commune_id], map: "fk_customers_commune")
+  @@index([company_id, legal_name], map: "idx_customers_company_name")
+  @@index([company_id, tax_id], map: "idx_customers_company_tax")
+}
+
+model digital_assets {
+  id                BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id        BigInt           @db.UnsignedBigInt
+  storage_disk      String           @default("local") @db.VarChar(40)
+  storage_key       String           @db.VarChar(255)
+  original_filename String?          @db.VarChar(255)
+  public_url        String?          @db.VarChar(700)
+  mime_type         String           @db.VarChar(120)
+  extension         String?          @db.VarChar(20)
+  size_bytes        BigInt           @default(0) @db.UnsignedBigInt
+  width_px          Int?             @db.UnsignedInt
+  height_px         Int?             @db.UnsignedInt
+  sha256_hash       String?          @db.Char(64)
+  metadata_json     Json?
+  is_active         Boolean          @default(true)
+  created_at        DateTime         @default(now()) @db.DateTime(0)
+  updated_at        DateTime         @default(now()) @db.DateTime(0)
+  deleted_at        DateTime?        @db.DateTime(0)
+  created_by        BigInt?          @db.UnsignedBigInt
+  companies         companies        @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_digital_assets_company")
+  product_images    product_images[]
+
+  @@unique([company_id, sha256_hash], map: "uk_digital_assets_company_sha256")
+  @@unique([company_id, storage_disk, storage_key], map: "uk_digital_assets_company_storage_key")
+  @@index([company_id, is_active], map: "idx_digital_assets_company_active")
+  @@index([company_id, mime_type], map: "idx_digital_assets_company_mime")
+}
+
+model document_details {
+  id                 BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt           @db.UnsignedBigInt
+  document_id        BigInt           @db.UnsignedBigInt
+  line_number        Int              @db.UnsignedInt
+  product_variant_id BigInt           @db.UnsignedBigInt
+  warehouse_id       BigInt?          @db.UnsignedBigInt
+  quantity           Decimal          @db.Decimal(18, 4)
+  unit_price         Decimal          @db.Decimal(18, 4)
+  discount_amount    Decimal          @default(0.0000) @db.Decimal(18, 4)
+  tax_amount         Decimal          @default(0.0000) @db.Decimal(18, 4)
+  line_total         Decimal          @db.Decimal(18, 4)
+  created_at         DateTime         @default(now()) @db.DateTime(0)
+  updated_at         DateTime         @default(now()) @db.DateTime(0)
+  companies          companies        @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_document_details_company")
+  documents          documents        @relation(fields: [document_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_document_details_document")
+  product_variants   product_variants @relation(fields: [product_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_document_details_variant")
+  warehouses         warehouses?      @relation(fields: [warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_document_details_warehouse")
+
+  @@unique([document_id, line_number], map: "uk_document_details_line")
+  @@index([product_variant_id], map: "fk_document_details_variant")
+  @@index([warehouse_id], map: "fk_document_details_warehouse")
+  @@index([company_id, product_variant_id], map: "idx_document_details_company_variant")
+}
+
+model document_sequences {
+  id               BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id       BigInt         @db.UnsignedBigInt
+  document_type_id BigInt         @db.UnsignedBigInt
+  year_num         Int            @db.UnsignedSmallInt
+  next_number      BigInt         @default(1) @db.UnsignedBigInt
+  created_at       DateTime       @default(now()) @db.DateTime(0)
+  updated_at       DateTime       @default(now()) @db.DateTime(0)
+  companies        companies      @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_document_sequences_company")
+  document_types   document_types @relation(fields: [document_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_document_sequences_type")
+
+  @@unique([company_id, document_type_id, year_num], map: "uk_document_sequences_scope")
+  @@index([document_type_id], map: "fk_document_sequences_type")
+}
+
+model document_types {
+  id                 BigInt                           @id @default(autoincrement()) @db.UnsignedBigInt
+  code               String                           @unique(map: "uk_document_types_code") @db.VarChar(30)
+  name               String                           @db.VarChar(120)
+  counterpart_scope  document_types_counterpart_scope @default(NONE)
+  affects_inventory  Boolean                          @default(false)
+  affects_accounting Boolean                          @default(false)
+  created_at         DateTime                         @default(now()) @db.DateTime(0)
+  document_sequences document_sequences[]
+  documents          documents[]
+}
+
+model documents {
+  id               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id       BigInt             @db.UnsignedBigInt
+  document_type_id BigInt             @db.UnsignedBigInt
+  sequence_number  BigInt             @db.UnsignedBigInt
+  document_date    DateTime           @default(now()) @db.DateTime(0)
+  warehouse_id     BigInt?            @db.UnsignedBigInt
+  customer_id      BigInt?            @db.UnsignedBigInt
+  supplier_id      BigInt?            @db.UnsignedBigInt
+  status           documents_status   @default(DRAFT)
+  subtotal         Decimal            @default(0.0000) @db.Decimal(18, 4)
+  tax_total        Decimal            @default(0.0000) @db.Decimal(18, 4)
+  discount_total   Decimal            @default(0.0000) @db.Decimal(18, 4)
+  total            Decimal            @default(0.0000) @db.Decimal(18, 4)
+  notes            String?            @db.VarChar(255)
+  confirmed_at     DateTime?          @db.DateTime(0)
+  created_at       DateTime           @default(now()) @db.DateTime(0)
+  updated_at       DateTime           @default(now()) @db.DateTime(0)
+  deleted_at       DateTime?          @db.DateTime(0)
+  created_by       BigInt?            @db.UnsignedBigInt
+  document_details document_details[]
+  companies        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_documents_company")
+  customers        customers?         @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_documents_customer")
+  suppliers        suppliers?         @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_documents_supplier")
+  document_types   document_types     @relation(fields: [document_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_documents_type")
+  warehouses       warehouses?        @relation(fields: [warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_documents_warehouse")
+  sales            sales[]
+
+  @@unique([company_id, document_type_id, sequence_number], map: "uk_documents_scope_number")
+  @@index([customer_id], map: "fk_documents_customer")
+  @@index([supplier_id], map: "fk_documents_supplier")
+  @@index([document_type_id], map: "fk_documents_type")
+  @@index([warehouse_id], map: "fk_documents_warehouse")
+  @@index([company_id, document_date], map: "idx_documents_company_date")
+  @@index([company_id, status], map: "idx_documents_company_status")
+  @@index([company_id, document_type_id, document_date, status], map: "idx_documents_company_type_date_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model inventory {
+  id                 BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt           @db.UnsignedBigInt
+  warehouse_id       BigInt           @db.UnsignedBigInt
+  product_variant_id BigInt           @db.UnsignedBigInt
+  quantity_on_hand   Decimal          @default(0.0000) @db.Decimal(18, 4)
+  quantity_reserved  Decimal          @default(0.0000) @db.Decimal(18, 4)
+  quantity_available Decimal?         @db.Decimal(18, 4)
+  min_stock          Decimal          @default(0.0000) @db.Decimal(18, 4)
+  max_stock          Decimal?         @db.Decimal(18, 4)
+  reorder_point      Decimal?         @db.Decimal(18, 4)
+  created_at         DateTime         @default(now()) @db.DateTime(0)
+  updated_at         DateTime         @default(now()) @db.DateTime(0)
+  companies          companies        @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_company")
+  product_variants   product_variants @relation(fields: [product_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_variant")
+  warehouses         warehouses       @relation(fields: [warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_warehouse")
+
+  @@unique([company_id, warehouse_id, product_variant_id], map: "uk_inventory_scope")
+  @@index([product_variant_id], map: "fk_inventory_variant")
+  @@index([warehouse_id], map: "fk_inventory_warehouse")
+  @@index([company_id, product_variant_id], map: "idx_inventory_company_variant")
+  @@index([company_id, warehouse_id], map: "idx_inventory_company_warehouse")
+}
+
+model inventory_movement_types {
+  id                  BigInt                             @id @default(autoincrement()) @db.UnsignedBigInt
+  code                String                             @unique(map: "uk_inventory_movement_types_code") @db.VarChar(30)
+  name                String                             @db.VarChar(120)
+  direction           inventory_movement_types_direction
+  created_at          DateTime                           @default(now()) @db.DateTime(0)
+  inventory_movements inventory_movements[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model inventory_movements {
+  id                                                              BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id                                                      BigInt                   @db.UnsignedBigInt
+  movement_type_id                                                BigInt                   @db.UnsignedBigInt
+  warehouse_id                                                    BigInt                   @db.UnsignedBigInt
+  related_warehouse_id                                            BigInt?                  @db.UnsignedBigInt
+  product_variant_id                                              BigInt                   @db.UnsignedBigInt
+  quantity                                                        Decimal                  @db.Decimal(18, 4)
+  unit_cost                                                       Decimal?                 @db.Decimal(18, 4)
+  movement_date                                                   DateTime                 @default(now()) @db.DateTime(0)
+  reason                                                          String?                  @db.VarChar(255)
+  source_document_type                                            String?                  @db.VarChar(40)
+  source_document_id                                              BigInt?                  @db.UnsignedBigInt
+  created_at                                                      DateTime                 @default(now()) @db.DateTime(0)
+  created_by                                                      BigInt?                  @db.UnsignedBigInt
+  companies                                                       companies                @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_movements_company")
+  warehouses_inventory_movements_related_warehouse_idTowarehouses warehouses?              @relation("inventory_movements_related_warehouse_idTowarehouses", fields: [related_warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_movements_related_warehouse")
+  inventory_movement_types                                        inventory_movement_types @relation(fields: [movement_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_movements_type")
+  product_variants                                                product_variants         @relation(fields: [product_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_movements_variant")
+  warehouses_inventory_movements_warehouse_idTowarehouses         warehouses               @relation("inventory_movements_warehouse_idTowarehouses", fields: [warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_inventory_movements_warehouse")
+
+  @@index([related_warehouse_id], map: "fk_inventory_movements_related_warehouse")
+  @@index([movement_type_id], map: "fk_inventory_movements_type")
+  @@index([product_variant_id], map: "fk_inventory_movements_variant")
+  @@index([warehouse_id], map: "fk_inventory_movements_warehouse")
+  @@index([company_id, movement_date], map: "idx_inventory_movements_company_date")
+  @@index([company_id, movement_type_id, movement_date], map: "idx_inventory_movements_company_type_date")
+  @@index([company_id, product_variant_id], map: "idx_inventory_movements_company_variant")
+  @@index([company_id, warehouse_id], map: "idx_inventory_movements_company_warehouse")
+}
+
+model models {
+  id         BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id BigInt     @db.UnsignedBigInt
+  brand_id   BigInt     @db.UnsignedBigInt
+  code       String     @db.VarChar(40)
+  name       String     @db.VarChar(120)
+  created_at DateTime   @default(now()) @db.DateTime(0)
+  updated_at DateTime   @default(now()) @db.DateTime(0)
+  deleted_at DateTime?  @db.DateTime(0)
+  brands     brands     @relation(fields: [brand_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_models_brand")
+  companies  companies  @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_models_company")
+  products   products[]
+
+  @@unique([company_id, code], map: "uk_models_company_code")
+  @@index([brand_id], map: "idx_models_brand")
+}
+
+model payment_methods {
+  id                 BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt          @db.UnsignedBigInt
+  code               String          @db.VarChar(30)
+  name               String          @db.VarChar(80)
+  requires_reference Boolean         @default(false)
+  is_cash            Boolean         @default(false)
+  is_active          Boolean         @default(true)
+  created_at         DateTime        @default(now()) @db.DateTime(0)
+  updated_at         DateTime        @default(now()) @db.DateTime(0)
+  companies          companies       @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_payment_methods_company")
+  sale_payments      sale_payments[]
+
+  @@unique([company_id, code], map: "uk_payment_methods_company_code")
+}
+
+model permissions {
+  id               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  code             String             @unique(map: "uk_permissions_code") @db.VarChar(80)
+  name             String             @db.VarChar(120)
+  module_name      String             @db.VarChar(80)
+  description      String?            @db.VarChar(255)
+  created_at       DateTime           @default(now()) @db.DateTime(0)
+  updated_at       DateTime           @default(now()) @db.DateTime(0)
+  role_permissions role_permissions[]
+
+  @@index([module_name], map: "idx_permissions_module")
+}
+
+model pos_terminals {
+  id             BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id     BigInt           @db.UnsignedBigInt
+  warehouse_id   BigInt           @db.UnsignedBigInt
+  code           String           @db.VarChar(40)
+  name           String           @db.VarChar(120)
+  device_name    String?          @db.VarChar(120)
+  serial_number  String?          @db.VarChar(120)
+  is_active      Boolean          @default(true)
+  created_at     DateTime         @default(now()) @db.DateTime(0)
+  updated_at     DateTime         @default(now()) @db.DateTime(0)
+  deleted_at     DateTime?        @db.DateTime(0)
+  cash_registers cash_registers[]
+  companies      companies        @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pos_terminals_company")
+  warehouses     warehouses       @relation(fields: [warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pos_terminals_warehouse")
+  sales          sales[]
+
+  @@unique([company_id, code], map: "uk_pos_terminals_company_code")
+  @@index([warehouse_id], map: "fk_pos_terminals_warehouse")
+  @@index([company_id, warehouse_id], map: "idx_pos_terminals_company_warehouse")
+}
+
+model product_images {
+  id                 BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt                 @db.UnsignedBigInt
+  product_id         BigInt                 @db.UnsignedBigInt
+  asset_id           BigInt                 @db.UnsignedBigInt
+  purpose            product_images_purpose @default(GALLERY)
+  alt_text           String?                @db.VarChar(255)
+  sort_order         Int                    @default(1) @db.UnsignedSmallInt
+  is_primary         Boolean                @default(false)
+  is_active          Boolean                @default(true)
+  created_at         DateTime               @default(now()) @db.DateTime(0)
+  updated_at         DateTime               @default(now()) @db.DateTime(0)
+  deleted_at         DateTime?              @db.DateTime(0)
+  created_by         BigInt?                @db.UnsignedBigInt
+  primary_product_id BigInt?                @db.UnsignedBigInt
+  digital_assets     digital_assets         @relation(fields: [asset_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_images_asset")
+  companies          companies              @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_images_company")
+  products           products               @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_images_product")
+
+  @@unique([company_id, product_id, asset_id], map: "uk_product_images_company_product_asset")
+  @@unique([company_id, product_id, sort_order], map: "uk_product_images_company_product_sort")
+  @@unique([company_id, primary_product_id], map: "uk_product_images_one_primary")
+  @@index([product_id], map: "fk_product_images_product")
+  @@index([asset_id], map: "idx_product_images_asset")
+  @@index([company_id, product_id, is_primary, sort_order], map: "idx_product_images_company_listing")
+  @@index([company_id, product_id, is_active], map: "idx_product_images_company_product_active")
+}
+
+model product_variants {
+  id                  BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id          BigInt                @db.UnsignedBigInt
+  product_id          BigInt                @db.UnsignedBigInt
+  variant_code        String                @db.VarChar(60)
+  name                String                @db.VarChar(180)
+  attributes_json     Json?
+  sku                 String?               @db.VarChar(60)
+  barcode             String?               @db.VarChar(80)
+  cost_price          Decimal               @default(0.0000) @db.Decimal(18, 4)
+  sale_price          Decimal               @default(0.0000) @db.Decimal(18, 4)
+  is_active           Boolean               @default(true)
+  created_at          DateTime              @default(now()) @db.DateTime(0)
+  updated_at          DateTime              @default(now()) @db.DateTime(0)
+  deleted_at          DateTime?             @db.DateTime(0)
+  document_details    document_details[]
+  inventory           inventory[]
+  inventory_movements inventory_movements[]
+  companies           companies             @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_variants_company")
+  products            products              @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_variants_product")
+  sale_details        sale_details[]
+
+  @@unique([company_id, barcode], map: "uk_product_variants_company_barcode")
+  @@unique([company_id, variant_code], map: "uk_product_variants_company_code")
+  @@unique([company_id, sku], map: "uk_product_variants_company_sku")
+  @@index([product_id], map: "idx_product_variants_product")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model products {
+  id               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id       BigInt             @db.UnsignedBigInt
+  sku              String             @db.VarChar(60)
+  barcode          String?            @db.VarChar(80)
+  name             String             @db.VarChar(180)
+  description      String?            @db.Text
+  category_id      BigInt?            @db.UnsignedBigInt
+  subcategory_id   BigInt?            @db.UnsignedBigInt
+  brand_id         BigInt?            @db.UnsignedBigInt
+  model_id         BigInt?            @db.UnsignedBigInt
+  base_uom_id      BigInt             @db.UnsignedBigInt
+  tax_rate         Decimal            @default(0.0000) @db.Decimal(8, 4)
+  cost_price       Decimal            @default(0.0000) @db.Decimal(18, 4)
+  sale_price       Decimal            @default(0.0000) @db.Decimal(18, 4)
+  min_price        Decimal?           @db.Decimal(18, 4)
+  weight           Decimal?           @db.Decimal(10, 4)
+  weight_unit      String?            @default("kg") @db.VarChar(10)
+  width_cm         Decimal?           @db.Decimal(10, 4)
+  height_cm        Decimal?           @db.Decimal(10, 4)
+  depth_cm         Decimal?           @db.Decimal(10, 4)
+  slug             String?            @db.VarChar(220)
+  meta_title       String?            @db.VarChar(160)
+  meta_description String?            @db.VarChar(320)
+  is_featured      Boolean            @default(false)
+  track_inventory  Boolean            @default(true)
+  min_stock        Decimal            @default(0.0000) @db.Decimal(18, 4)
+  reorder_point    Decimal?           @db.Decimal(18, 4)
+  thumbnail_url    String?            @db.VarChar(500)
+  image_count      Int                @default(0) @db.UnsignedSmallInt
+  is_service       Boolean            @default(false)
+  is_active        Boolean            @default(true)
+  created_at       DateTime           @default(now()) @db.DateTime(0)
+  updated_at       DateTime           @default(now()) @db.DateTime(0)
+  deleted_at       DateTime?          @db.DateTime(0)
+  created_by       BigInt?            @db.UnsignedBigInt
+  product_images   product_images[]
+  product_variants product_variants[]
+  units_of_measure units_of_measure   @relation(fields: [base_uom_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_products_base_uom")
+  brands           brands?            @relation(fields: [brand_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_products_brand")
+  categories       categories?        @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_products_category")
+  companies        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_products_company")
+  models           models?            @relation(fields: [model_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_products_model")
+  subcategories    subcategories?     @relation(fields: [subcategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_products_subcategory")
+
+  @@unique([company_id, barcode], map: "uk_products_company_barcode")
+  @@unique([company_id, sku], map: "uk_products_company_sku")
+  @@unique([company_id, slug], map: "uk_products_company_slug")
+  @@index([base_uom_id], map: "fk_products_base_uom")
+  @@index([brand_id], map: "fk_products_brand")
+  @@index([category_id], map: "fk_products_category")
+  @@index([model_id], map: "fk_products_model")
+  @@index([subcategory_id], map: "fk_products_subcategory")
+  @@index([company_id, name], map: "idx_products_company_name")
+  @@index([company_id, is_featured], map: "idx_products_featured")
+}
+
+model regions {
+  id           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  country_code String   @default("CL") @db.Char(2)
+  code         String   @db.VarChar(20)
+  name         String   @db.VarChar(120)
+  created_at   DateTime @default(now()) @db.DateTime(0)
+  updated_at   DateTime @default(now()) @db.DateTime(0)
+  cities       cities[]
+
+  @@unique([country_code, code], map: "uk_regions_country_code")
+}
+
+model role_permissions {
+  role_id       BigInt      @db.UnsignedBigInt
+  permission_id BigInt      @db.UnsignedBigInt
+  granted_at    DateTime    @default(now()) @db.DateTime(0)
+  granted_by    BigInt?     @db.UnsignedBigInt
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_permissions_permission")
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_permissions_role")
+
+  @@id([role_id, permission_id])
+  @@index([permission_id], map: "fk_role_permissions_permission")
+}
+
+model roles {
+  id               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id       BigInt             @db.UnsignedBigInt
+  code             String             @db.VarChar(50)
+  name             String             @db.VarChar(100)
+  description      String?            @db.VarChar(255)
+  is_system        Boolean            @default(false)
+  created_at       DateTime           @default(now()) @db.DateTime(0)
+  updated_at       DateTime           @default(now()) @db.DateTime(0)
+  deleted_at       DateTime?          @db.DateTime(0)
+  created_by       BigInt?            @db.UnsignedBigInt
+  role_permissions role_permissions[]
+  companies        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_roles_company")
+  user_roles       user_roles[]
+
+  @@unique([company_id, code], map: "uk_roles_company_code")
+  @@index([company_id], map: "idx_roles_company")
+}
+
+model sale_details {
+  id                 BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt           @db.UnsignedBigInt
+  sale_id            BigInt           @db.UnsignedBigInt
+  line_number        Int              @db.UnsignedInt
+  warehouse_id       BigInt           @db.UnsignedBigInt
+  product_variant_id BigInt           @db.UnsignedBigInt
+  quantity           Decimal          @db.Decimal(18, 4)
+  unit_price         Decimal          @db.Decimal(18, 4)
+  discount_amount    Decimal          @default(0.0000) @db.Decimal(18, 4)
+  tax_amount         Decimal          @default(0.0000) @db.Decimal(18, 4)
+  line_total         Decimal          @db.Decimal(18, 4)
+  created_at         DateTime         @default(now()) @db.DateTime(0)
+  companies          companies        @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_details_company")
+  sales              sales            @relation(fields: [sale_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_details_sale")
+  product_variants   product_variants @relation(fields: [product_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_details_variant")
+  warehouses         warehouses       @relation(fields: [warehouse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_details_warehouse")
+
+  @@unique([sale_id, line_number], map: "uk_sale_details_line")
+  @@index([product_variant_id], map: "fk_sale_details_variant")
+  @@index([warehouse_id], map: "fk_sale_details_warehouse")
+  @@index([company_id, product_variant_id], map: "idx_sale_details_company_variant")
+}
+
+model sale_payments {
+  id                BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id        BigInt          @db.UnsignedBigInt
+  sale_id           BigInt          @db.UnsignedBigInt
+  payment_method_id BigInt          @db.UnsignedBigInt
+  amount            Decimal         @db.Decimal(18, 4)
+  reference_code    String?         @db.VarChar(120)
+  paid_at           DateTime        @default(now()) @db.DateTime(0)
+  created_at        DateTime        @default(now()) @db.DateTime(0)
+  companies         companies       @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_payments_company")
+  payment_methods   payment_methods @relation(fields: [payment_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_payments_method")
+  sales             sales           @relation(fields: [sale_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sale_payments_sale")
+
+  @@index([payment_method_id], map: "fk_sale_payments_method")
+  @@index([sale_id], map: "fk_sale_payments_sale")
+  @@index([company_id, sale_id], map: "idx_sale_payments_company_sale")
+}
+
+model sales {
+  id              BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id      BigInt          @db.UnsignedBigInt
+  cash_opening_id BigInt          @db.UnsignedBigInt
+  terminal_id     BigInt          @db.UnsignedBigInt
+  customer_id     BigInt?         @db.UnsignedBigInt
+  document_id     BigInt?         @db.UnsignedBigInt
+  sold_at         DateTime        @default(now()) @db.DateTime(0)
+  status          sales_status    @default(PENDING)
+  subtotal        Decimal         @default(0.0000) @db.Decimal(18, 4)
+  tax_total       Decimal         @default(0.0000) @db.Decimal(18, 4)
+  discount_total  Decimal         @default(0.0000) @db.Decimal(18, 4)
+  total           Decimal         @default(0.0000) @db.Decimal(18, 4)
+  created_at      DateTime        @default(now()) @db.DateTime(0)
+  updated_at      DateTime        @default(now()) @db.DateTime(0)
+  deleted_at      DateTime?       @db.DateTime(0)
+  created_by      BigInt?         @db.UnsignedBigInt
+  sale_details    sale_details[]
+  sale_payments   sale_payments[]
+  companies       companies       @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sales_company")
+  customers       customers?      @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sales_customer")
+  documents       documents?      @relation(fields: [document_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sales_document")
+  cash_openings   cash_openings   @relation(fields: [cash_opening_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sales_opening")
+  pos_terminals   pos_terminals   @relation(fields: [terminal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sales_terminal")
+
+  @@index([customer_id], map: "fk_sales_customer")
+  @@index([document_id], map: "fk_sales_document")
+  @@index([cash_opening_id], map: "fk_sales_opening")
+  @@index([terminal_id], map: "fk_sales_terminal")
+  @@index([company_id, sold_at], map: "idx_sales_company_date")
+  @@index([company_id, cash_opening_id, sold_at], map: "idx_sales_company_opening_date")
+  @@index([company_id, status], map: "idx_sales_company_status")
+}
+
+model subcategories {
+  id          BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id  BigInt     @db.UnsignedBigInt
+  category_id BigInt     @db.UnsignedBigInt
+  code        String     @db.VarChar(40)
+  name        String     @db.VarChar(120)
+  description String?    @db.VarChar(255)
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now()) @db.DateTime(0)
+  updated_at  DateTime   @default(now()) @db.DateTime(0)
+  deleted_at  DateTime?  @db.DateTime(0)
+  products    products[]
+  categories  categories @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategories_category")
+  companies   companies  @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategories_company")
+
+  @@unique([company_id, code], map: "uk_subcategories_company_code")
+  @@index([category_id], map: "idx_subcategories_category")
+}
+
+model supplier_contacts {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id  BigInt    @db.UnsignedBigInt
+  supplier_id BigInt    @db.UnsignedBigInt
+  full_name   String    @db.VarChar(140)
+  email       String?   @db.VarChar(160)
+  phone       String?   @db.VarChar(40)
+  role_name   String?   @db.VarChar(80)
+  is_primary  Boolean   @default(false)
+  created_at  DateTime  @default(now()) @db.DateTime(0)
+  updated_at  DateTime  @default(now()) @db.DateTime(0)
+  deleted_at  DateTime? @db.DateTime(0)
+  companies   companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_contacts_company")
+  suppliers   suppliers @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_supplier_contacts_supplier")
+
+  @@index([supplier_id], map: "fk_supplier_contacts_supplier")
+  @@index([company_id, supplier_id], map: "idx_supplier_contacts_company_supplier")
+}
+
+model suppliers {
+  id                 BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt              @db.UnsignedBigInt
+  code               String              @db.VarChar(40)
+  tax_id             String?             @db.VarChar(30)
+  legal_name         String              @db.VarChar(180)
+  business_activity  String?             @db.VarChar(120)
+  email              String?             @db.VarChar(160)
+  phone              String?             @db.VarChar(40)
+  address_line       String?             @db.VarChar(220)
+  commune_id         BigInt?             @db.UnsignedBigInt
+  payment_terms_days Int                 @default(0) @db.UnsignedSmallInt
+  is_active          Boolean             @default(true)
+  created_at         DateTime            @default(now()) @db.DateTime(0)
+  updated_at         DateTime            @default(now()) @db.DateTime(0)
+  deleted_at         DateTime?           @db.DateTime(0)
+  created_by         BigInt?             @db.UnsignedBigInt
+  documents          documents[]
+  supplier_contacts  supplier_contacts[]
+  communes           communes?           @relation(fields: [commune_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_suppliers_commune")
+  companies          companies           @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_suppliers_company")
+
+  @@unique([company_id, code], map: "uk_suppliers_company_code")
+  @@index([commune_id], map: "fk_suppliers_commune")
+  @@index([company_id, legal_name], map: "idx_suppliers_company_name")
+  @@index([company_id, tax_id], map: "idx_suppliers_company_tax")
+}
+
+model unit_conversions {
+  id                                                               BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id                                                       BigInt           @db.UnsignedBigInt
+  from_unit_id                                                     BigInt           @db.UnsignedBigInt
+  to_unit_id                                                       BigInt           @db.UnsignedBigInt
+  factor                                                           Decimal          @db.Decimal(18, 8)
+  created_at                                                       DateTime         @default(now()) @db.DateTime(0)
+  updated_at                                                       DateTime         @default(now()) @db.DateTime(0)
+  companies                                                        companies        @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_unit_conversions_company")
+  units_of_measure_unit_conversions_from_unit_idTounits_of_measure units_of_measure @relation("unit_conversions_from_unit_idTounits_of_measure", fields: [from_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_unit_conversions_from_uom")
+  units_of_measure_unit_conversions_to_unit_idTounits_of_measure   units_of_measure @relation("unit_conversions_to_unit_idTounits_of_measure", fields: [to_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_unit_conversions_to_uom")
+
+  @@unique([company_id, from_unit_id, to_unit_id], map: "uk_unit_conversions_pair")
+  @@index([from_unit_id], map: "fk_unit_conversions_from_uom")
+  @@index([to_unit_id], map: "fk_unit_conversions_to_uom")
+}
+
+model units_of_measure {
+  id                                                               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id                                                       BigInt             @db.UnsignedBigInt
+  code                                                             String             @db.VarChar(20)
+  name                                                             String             @db.VarChar(80)
+  symbol                                                           String             @db.VarChar(20)
+  unit_type                                                        String             @db.VarChar(40)
+  is_base_unit                                                     Boolean            @default(false)
+  created_at                                                       DateTime           @default(now()) @db.DateTime(0)
+  updated_at                                                       DateTime           @default(now()) @db.DateTime(0)
+  deleted_at                                                       DateTime?          @db.DateTime(0)
+  products                                                         products[]
+  unit_conversions_unit_conversions_from_unit_idTounits_of_measure unit_conversions[] @relation("unit_conversions_from_unit_idTounits_of_measure")
+  unit_conversions_unit_conversions_to_unit_idTounits_of_measure   unit_conversions[] @relation("unit_conversions_to_unit_idTounits_of_measure")
+  companies                                                        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_uom_company")
+
+  @@unique([company_id, code], map: "uk_uom_company_code")
+  @@index([company_id, unit_type], map: "idx_uom_company_type")
+}
+
+model user_roles {
+  user_id     BigInt   @db.UnsignedBigInt
+  role_id     BigInt   @db.UnsignedBigInt
+  assigned_at DateTime @default(now()) @db.DateTime(0)
+  assigned_by BigInt?  @db.UnsignedBigInt
+  roles       roles    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_roles_role")
+  users       users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_roles_user")
+
+  @@id([user_id, role_id])
+  @@index([role_id], map: "fk_user_roles_role")
+}
+
+model user_sessions {
+  id                 BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id         BigInt    @db.UnsignedBigInt
+  user_id            BigInt    @db.UnsignedBigInt
+  terminal_id        BigInt?   @db.UnsignedBigInt
+  device_fingerprint String?   @db.VarChar(180)
+  ip_address         String?   @db.VarChar(64)
+  user_agent         String?   @db.VarChar(255)
+  login_at           DateTime  @default(now()) @db.DateTime(0)
+  logout_at          DateTime? @db.DateTime(0)
+  is_active          Boolean   @default(true)
+  created_at         DateTime  @default(now()) @db.DateTime(0)
+  updated_at         DateTime  @default(now()) @db.DateTime(0)
+  companies          companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_sessions_company")
+  users              users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_sessions_user")
+
+  @@index([user_id], map: "fk_user_sessions_user")
+  @@index([company_id, user_id, is_active], map: "idx_user_sessions_company_user_active")
+  @@index([login_at], map: "idx_user_sessions_login")
+}
+
+model users {
+  id            BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id    BigInt          @db.UnsignedBigInt
+  full_name     String          @db.VarChar(160)
+  email         String          @db.VarChar(160)
+  password_hash String          @db.VarChar(255)
+  is_active     Boolean         @default(true)
+  last_login_at DateTime?       @db.DateTime(0)
+  created_at    DateTime        @default(now()) @db.DateTime(0)
+  updated_at    DateTime        @default(now()) @db.DateTime(0)
+  deleted_at    DateTime?       @db.DateTime(0)
+  created_by    BigInt?         @db.UnsignedBigInt
+  cash_closings cash_closings[]
+  cash_openings cash_openings[]
+  user_roles    user_roles[]
+  user_sessions user_sessions[]
+  companies     companies       @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_company")
+
+  @@unique([company_id, email], map: "uk_users_company_email")
+  @@index([company_id, is_active], map: "idx_users_company_active")
+}
+
+model warehouses {
+  id                                                                       BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  company_id                                                               BigInt                @db.UnsignedBigInt
+  code                                                                     String                @db.VarChar(40)
+  name                                                                     String                @db.VarChar(140)
+  address_line                                                             String?               @db.VarChar(220)
+  commune_id                                                               BigInt?               @db.UnsignedBigInt
+  is_main                                                                  Boolean               @default(false)
+  is_active                                                                Boolean               @default(true)
+  created_at                                                               DateTime              @default(now()) @db.DateTime(0)
+  updated_at                                                               DateTime              @default(now()) @db.DateTime(0)
+  deleted_at                                                               DateTime?             @db.DateTime(0)
+  document_details                                                         document_details[]
+  documents                                                                documents[]
+  inventory                                                                inventory[]
+  inventory_movements_inventory_movements_related_warehouse_idTowarehouses inventory_movements[] @relation("inventory_movements_related_warehouse_idTowarehouses")
+  inventory_movements_inventory_movements_warehouse_idTowarehouses         inventory_movements[] @relation("inventory_movements_warehouse_idTowarehouses")
+  pos_terminals                                                            pos_terminals[]
+  sale_details                                                             sale_details[]
+  communes                                                                 communes?             @relation(fields: [commune_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_warehouses_commune")
+  companies                                                                companies             @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_warehouses_company")
+
+  @@unique([company_id, code], map: "uk_warehouses_company_code")
+  @@index([commune_id], map: "fk_warehouses_commune")
+  @@index([company_id, is_active], map: "idx_warehouses_company_active")
+}
+
+enum cash_movements_movement_type {
+  IN
+  OUT
+}
+
+enum document_types_counterpart_scope {
+  CUSTOMER
+  SUPPLIER
+  NONE
+}
+
+enum inventory_movement_types_direction {
+  IN
+  OUT
+  TRANSFER
+}
+
+enum audit_logs_action_type {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+enum product_images_purpose {
+  PRIMARY
+  GALLERY
+  THUMBNAIL
+  DETAIL
+  PACKAGING
+}
+
+enum cash_openings_status {
+  OPEN
+  CLOSED
+}
+
+enum sales_status {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum documents_status {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
