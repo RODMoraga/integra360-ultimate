@@ -39,8 +39,21 @@ Arquitectura full-stack modular con Node.js + MySQL 8 + Vue 3, orientada a creci
 |   |   |-- store/
 |   |   `-- views/
 |   `-- docker/
+|-- docs/
+|   `-- auth/
+|       |-- QUICK_START.md
+|       |-- DOCUMENTATION_INDEX.md
+|       `-- ...
 `-- docker-compose.yml
 ```
+
+## Documentacion
+
+Toda la documentacion funcional del modulo de autenticacion fue centralizada en:
+
+- `docs/auth/`
+- Indice principal: `docs/auth/DOCUMENTATION_INDEX.md`
+- Inicio rapido: `docs/auth/QUICK_START.md`
 
 ## Configuracion de base de datos
 
