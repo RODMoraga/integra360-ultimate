@@ -5,6 +5,7 @@ import { env } from "../../config/env";
 export interface AuthUser {
   id: number;
   email: string;
+  companyId: number;
 }
 
 declare global {
@@ -15,6 +16,9 @@ declare global {
   }
 }
 
+/**
+ * Express middleware that validates Bearer JWT tokens and injects user context.
+ */
 export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {

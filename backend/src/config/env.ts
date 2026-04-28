@@ -1,8 +1,14 @@
 import dotenv from "dotenv";
 import { z } from "zod";
 
+/**
+ * Loads environment variables from `.env` before schema parsing.
+ */
 dotenv.config();
 
+/**
+ * Runtime environment contract validated at bootstrap time.
+ */
 const envSchema = z.object({
   // ── Entorno ──────────────────────────────────────────────────────────────
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -48,5 +54,12 @@ const envSchema = z.object({
   UPLOAD_DIR: z.string().default("./uploads")
 });
 
+/**
+ * Parsed and validated environment values.
+ */
 export const env = envSchema.parse(process.env);
+
+/**
+ * Type helper inferred from `envSchema`.
+ */
 export type Env = z.infer<typeof envSchema>;

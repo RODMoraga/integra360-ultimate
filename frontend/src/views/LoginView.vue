@@ -227,27 +227,35 @@
 <script setup lang="ts">
 import { reactive, computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { authService } from "@/services/auth.service";
+import { authService, DEFAULT_COMPANY_ID } from "@/services/auth.service";
 import { RouterLink } from "vue-router";
 
-// Router
+/**
+ * Router instance used for post-auth redirects.
+ */
 const router = useRouter();
 
-// Form State
+/**
+ * Reactive login form model.
+ */
 const formData = reactive({
   email: "",
   password: "",
   rememberMe: false
 });
 
-// UI State
+/**
+ * UI state flags and validation messages.
+ */
 const showPassword = ref(false);
 const isLoading = ref(false);
 const serverError = ref("");
 const emailError = ref("");
 const passwordError = ref("");
 
-// Validations
+/**
+ * Validates email value and updates helper message state.
+ */
 const validateEmail = () => {
   if (!formData.email) {
     emailError.value = "El correo electrónico es requerido";
@@ -262,6 +270,9 @@ const validateEmail = () => {
   return true;
 };
 
+/**
+ * Validates password value and updates helper message state.
+ */
 const validatePassword = () => {
   if (!formData.password) {
     passwordError.value = "La contraseña es requerida";
@@ -275,16 +286,23 @@ const validatePassword = () => {
   return true;
 };
 
-// Computed
+/**
+ * Enables submit only when required fields are complete and valid.
+ */
 const isFormValid = computed(() => {
   return formData.email && formData.password && !emailError.value && !passwordError.value;
 });
 
-// Methods
+/**
+ * Toggles password input between masked and plain text modes.
+ */
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
+/**
+ * Performs login flow with local validations and server-side auth request.
+ */
 const handleLogin = async () => {
   // Validate before submit
   const emailValid = validateEmail();
@@ -301,7 +319,7 @@ const handleLogin = async () => {
     const response = await authService.login({
       email: formData.email,
       password: formData.password,
-      companyId: 1
+      companyId: DEFAULT_COMPANY_ID
     });
 
     // Login successful

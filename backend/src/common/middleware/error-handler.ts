@@ -2,6 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/app-error";
 import { logger } from "../../config/logger";
 
+/**
+ * Global Express error middleware.
+ * Handles controlled `AppError` responses and logs unexpected failures.
+ */
 export const errorHandler = (
   err: Error,
   _req: Request,

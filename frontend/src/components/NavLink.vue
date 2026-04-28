@@ -16,6 +16,9 @@
 import { computed } from "vue";
 import { useRoute, RouterLink } from "vue-router";
 
+/**
+ * Navigation link contract for desktop/mobile modes.
+ */
 const props = defineProps({
   to: {
     type: String,
@@ -36,5 +39,9 @@ defineEmits<{
 }>();
 
 const route = useRoute();
+
+/**
+ * True when current route exactly matches link target.
+ */
 const isActive = computed(() => route.path === props.to);
 </script>

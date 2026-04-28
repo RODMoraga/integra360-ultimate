@@ -18,6 +18,10 @@ import Footer from "../components/Footer.vue";
 
 const route = useRoute();
 
+/**
+ * Controls global chrome visibility for routes that require full-screen layouts
+ * (for example login/register/dashboard).
+ */
 const showGlobalChrome = computed(() => {
   return route.meta.hideGlobalChrome !== true;
 });

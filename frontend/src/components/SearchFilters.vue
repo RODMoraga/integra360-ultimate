@@ -107,10 +107,16 @@ import { ref, computed } from "vue";
 import CustomSelect from "./CustomSelect.vue";
 import type { SelectOption } from "./CustomSelect.vue";
 
+/**
+ * Local filter state used by search controls.
+ */
 const searchQuery = ref("");
 const selectedCategory = ref("");
 const selectedBrand = ref("");
 
+/**
+ * Available category options for category filter select.
+ */
 const categoryOptions: SelectOption[] = [
   { label: "Todas las categorías", value: "" },
   { label: "Electrónica", value: "electronics" },
@@ -120,6 +126,9 @@ const categoryOptions: SelectOption[] = [
   { label: "Software", value: "software" }
 ];
 
+/**
+ * Available brand options for brand filter select.
+ */
 const brandOptions: SelectOption[] = [
   { label: "Todas las marcas", value: "" },
   { label: "Apple", value: "apple" },
@@ -130,10 +139,16 @@ const brandOptions: SelectOption[] = [
   { label: "ASUS", value: "asus" }
 ];
 
+/**
+ * Indicates whether at least one filter is active.
+ */
 const hasActiveFilters = computed(() => {
   return searchQuery.value || selectedCategory.value || selectedBrand.value;
 });
 
+/**
+ * Emits/handles search action with current filter snapshot.
+ */
 const handleSearch = () => {
   const filters = {
     search: searchQuery.value,
@@ -144,17 +159,26 @@ const handleSearch = () => {
   // Aquí se emitiría el evento con los filtros
 };
 
+/**
+ * Resets all filter controls to default state.
+ */
 const handleReset = () => {
   searchQuery.value = "";
   selectedCategory.value = "";
   selectedBrand.value = "";
 };
 
+/**
+ * Resolves readable category label from option value.
+ */
 const getCategoryLabel = (value: string) => {
   const option = categoryOptions.find(opt => opt.value === value);
   return option?.label || value;
 };
 
+/**
+ * Resolves readable brand label from option value.
+ */
 const getBrandLabel = (value: string) => {
   const option = brandOptions.find(opt => opt.value === value);
   return option?.label || value;

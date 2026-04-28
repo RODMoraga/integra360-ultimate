@@ -1,10 +1,16 @@
 import { Request, Response } from "express";
 import { userService } from "./user.service";
 
+/**
+ * HTTP controller for user endpoints.
+ */
 class UserController {
+  /**
+   * GET /users
+   * Returns users for the authenticated user's company.
+   */
   async list(req: Request, res: Response): Promise<void> {
-    // company_id comes from JWT payload or query param (dev fallback: 1)
-    const companyId = BigInt((req.user as { id: number } | undefined) ? 1 : 1);
+    const companyId = BigInt(req.user?.companyId ?? 2);
     const users = await userService.listUsers(companyId);
     res.status(200).json(users);
   }

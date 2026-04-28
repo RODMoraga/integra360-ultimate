@@ -9,6 +9,9 @@ import { apiRoutes } from "./routes";
 import { notFoundHandler } from "./common/middleware/not-found";
 import { errorHandler } from "./common/middleware/error-handler";
 
+/**
+ * Builds and configures the Express application instance.
+ */
 export const createApp = () => {
   const app = express();
 

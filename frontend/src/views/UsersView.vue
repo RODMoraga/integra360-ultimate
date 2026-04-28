@@ -38,6 +38,13 @@
 import { computed } from "vue";
 import { useUsers } from "../composables/useUsers";
 
+/**
+ * Users query state sourced from Vue Query composable.
+ */
 const { data, isLoading, isError } = useUsers();
+
+/**
+ * Safe rows accessor with empty fallback for rendering.
+ */
 const users = computed(() => data.value ?? []);
 </script>

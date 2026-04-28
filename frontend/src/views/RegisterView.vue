@@ -278,13 +278,17 @@
 <script setup lang="ts">
 import { reactive, computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { authService } from "@/services/auth.service";
+import { authService, DEFAULT_COMPANY_ID } from "@/services/auth.service";
 import { RouterLink } from "vue-router";
 
-// Router
+/**
+ * Router instance used for navigation after registration.
+ */
 const router = useRouter();
 
-// Form State
+/**
+ * Reactive registration form model.
+ */
 const formData = reactive({
   fullName: "",
   email: "",
@@ -293,7 +297,9 @@ const formData = reactive({
   acceptTerms: false
 });
 
-// UI State
+/**
+ * UI flags and validation messages for registration flow.
+ */
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 const isLoading = ref(false);
@@ -304,7 +310,9 @@ const emailError = ref("");
 const passwordError = ref("");
 const confirmPasswordError = ref("");
 
-// Validations
+/**
+ * Validates full name value and updates helper message state.
+ */
 const validateFullName = () => {
   if (!formData.fullName || formData.fullName.trim().length === 0) {
     fullNameError.value = "El nombre completo es requerido";
@@ -318,6 +326,9 @@ const validateFullName = () => {
   return true;
 };
 
+/**
+ * Validates email value and updates helper message state.
+ */
 const validateEmail = () => {
   if (!formData.email) {
     emailError.value = "El correo electrónico es requerido";
@@ -332,6 +343,9 @@ const validateEmail = () => {
   return true;
 };
 
+/**
+ * Validates password strength constraints.
+ */
 const validatePassword = () => {
   if (!formData.password) {
     passwordError.value = "La contraseña es requerida";
@@ -345,6 +359,9 @@ const validatePassword = () => {
   return true;
 };
 
+/**
+ * Validates password confirmation consistency.
+ */
 const validateConfirmPassword = () => {
   if (!formData.confirmPassword) {
     confirmPasswordError.value = "Debes confirmar tu contraseña";
@@ -358,7 +375,9 @@ const validateConfirmPassword = () => {
   return true;
 };
 
-// Computed
+/**
+ * Enables submit only when all required values are valid and terms accepted.
+ */
 const isFormValid = computed(() => {
   return (
     formData.fullName &&
@@ -373,15 +392,23 @@ const isFormValid = computed(() => {
   );
 });
 
-// Methods
+/**
+ * Toggles password field visibility.
+ */
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
+/**
+ * Toggles confirm-password field visibility.
+ */
 const toggleConfirmPasswordVisibility = () => {
   showConfirmPassword.value = !showConfirmPassword.value;
 };
 
+/**
+ * Performs account registration flow and redirects to login on success.
+ */
 const handleRegister = async () => {
   attemptedSubmit.value = true;
 
@@ -403,7 +430,7 @@ const handleRegister = async () => {
       fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
-      companyId: 1
+      companyId: DEFAULT_COMPANY_ID
     });
 
     // Registration successful, redirect to login

@@ -1,22 +1,27 @@
+/* Base third-party UI layers loaded before project styles. */
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "primeicons/primeicons.css";
 
+/* Tailwind layer directives: reset, component presets and utilities. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Global design tokens for the app shell. */
 :root {
   color: #0f172a;
   background-color: #f8fafc;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Background atmosphere for public pages and route wrappers. */
 body {
   margin: 0;
   min-height: 100vh;
   background: radial-gradient(circle at top right, #e0f2fe 0%, #f8fafc 45%, #ffffff 100%);
 }
 
+/* Keep SPA root stretching full viewport height. */
 #app {
   min-height: 100vh;
 }

@@ -1,26 +1,57 @@
 import { api } from "./api";
 
+/**
+ * Default company identifier used when request does not provide one.
+ */
+export const DEFAULT_COMPANY_ID = 2;
+
+/**
+ * Login request contract.
+ */
 export interface LoginRequest {
   email: string;
   password: string;
   companyId?: number;
 }
 
+/**
+ * Login response contract.
+ */
 export interface LoginResponse {
   accessToken: string;
   tokenType: string;
   expiresIn?: number;
 }
 
+/**
+ * Minimal authenticated user representation used in local storage.
+ */
 export interface AuthUser {
   id: number;
   email: string;
   fullName?: string;
+  companyId?: number;
 }
 
+/**
+ * Frontend authentication service.
+ * Handles token lifecycle, auth requests and persisted user state.
+ */
 class AuthService {
   private readonly TOKEN_KEY = "auth_token";
   private readonly USER_KEY = "auth_user";
+
+  /**
+   * Bootstrap auth state from persisted token
+   */
+  initializeAuth(): void {
+    const token = this.getToken();
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common["Authorization"];
+    }
+  }
 
   /**
    * Login with email and password
@@ -30,7 +61,7 @@ class AuthService {
       const response = await api.post<LoginResponse>("/auth/login", {
         email: credentials.email,
         password: credentials.password,
-        companyId: credentials.companyId || 1 // Default company ID
+        companyId: credentials.companyId ?? DEFAULT_COMPANY_ID
       });
 
       // Store token
@@ -58,7 +89,7 @@ class AuthService {
         fullName: data.fullName,
         email: data.email,
         password: data.password,
-        companyId: data.companyId || 1
+        companyId: data.companyId ?? DEFAULT_COMPANY_ID
       });
 
       return response.data;
@@ -129,7 +160,7 @@ class AuthService {
   }
 
   /**
-   * Handle API errors
+   * Normalizes request errors into user-friendly Error instances.
    */
   private handleError(error: any): Error {
     if (error.response) {

@@ -46,6 +46,9 @@
 import { ref, computed } from "vue";
 import ProductCard from "./ProductCard.vue";
 
+/**
+ * Product model consumed by catalog grid.
+ */
 interface Product {
   id: number;
   sku: string;
@@ -60,7 +63,9 @@ interface Product {
   rating?: number;
 }
 
-// Datos de ejemplo
+/**
+ * Mock product dataset used until API integration is wired.
+ */
 const mockProducts = ref<Product[]>([
   {
     id: 1,
@@ -161,8 +166,14 @@ const mockProducts = ref<Product[]>([
   }
 ]);
 
+/**
+ * Catalog projection used by template rendering.
+ */
 const products = computed(() => mockProducts.value);
 
+/**
+ * Placeholder handler for resetting upstream filters.
+ */
 const resetFilters = () => {
   console.log("Filtros reiniciados");
   // Aquí se emitiría el evento para reiniciar los filtros

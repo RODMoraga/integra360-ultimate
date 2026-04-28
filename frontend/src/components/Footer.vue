@@ -133,5 +133,8 @@
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 
+/**
+ * Dynamic copyright year shown in footer.
+ */
 const currentYear = computed(() => new Date().getFullYear());
 </script>

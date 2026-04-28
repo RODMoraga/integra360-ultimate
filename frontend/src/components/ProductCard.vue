@@ -182,6 +182,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 
+/**
+ * Product card model used by catalog presentation layer.
+ */
 interface Product {
   id: number;
   sku: string;
@@ -194,22 +197,37 @@ interface Product {
   rating?: number;
 }
 
+/**
+ * Component props contract.
+ */
 const props = defineProps<{
   product: Product;
 }>();
 
+/**
+ * Client-side favorite toggle state.
+ */
 const isFavorite = ref(false);
 
+/**
+ * Computes discount percentage when original price exists.
+ */
 const discountPercentage = computed(() => {
   if (!props.product.originalPrice) return 0;
   const discount = ((props.product.originalPrice - props.product.price) / props.product.originalPrice) * 100;
   return Math.round(discount);
 });
 
+/**
+ * Toggles favorite state for UI feedback.
+ */
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value;
 };
 
+/**
+ * Formats CLP prices using Chilean locale conventions.
+ */
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("es-CL", {
     style: "currency",

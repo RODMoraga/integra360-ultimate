@@ -1,10 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { authService } from "../services/auth.service";
 import HomeView from "../views/HomeView.vue";
 import DashboardView from "../views/DashboardView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import UsersView from "../views/UsersView.vue";
+import CompaniesView from "../views/CompaniesView.vue";
 
+/**
+ * Application router with public and protected routes.
+ */
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -34,12 +39,49 @@ export const router = createRouter({
     {
       path: "/dashboard",
       name: "dashboard",
-      component: DashboardView
+      component: DashboardView,
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true
+      }
     },
     {
       path: "/users",
       name: "users",
-      component: UsersView
+      component: UsersView,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: "/empresas",
+      name: "empresas",
+      component: CompaniesView,
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Empresas - Integra360"
+      }
     }
   ]
+});
+
+/**
+ * Global navigation guard.
+ * Redirects unauthenticated users from protected routes to login,
+ * and avoids showing login/register when a session is active.
+ */
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !authService.isAuthenticated()) {
+    return {
+      name: "login",
+      query: { redirect: to.fullPath }
+    };
+  }
+
+  if ((to.name === "login" || to.name === "register") && authService.isAuthenticated()) {
+    return { name: "dashboard" };
+  }
+
+  return true;
 });

@@ -2,12 +2,14 @@ import flowbitePlugin from "flowbite/plugin";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+  // Files scanned by Tailwind JIT to generate utility classes.
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
     "./node_modules/flowbite-vue/**/*.{js,ts}"
   ],
   theme: {
+    // Project design tokens and semantic palettes.
     extend: {
       fontFamily: {
         sans: ["Quicksand", "ui-sans-serif", "system-ui", "sans-serif"],
@@ -147,5 +149,6 @@ export default {
       }
     }
   },
+  // Third-party Tailwind plugin used by Flowbite components.
   plugins: [flowbitePlugin]
 };

@@ -81,12 +81,21 @@ import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import NavLink from "./NavLink.vue";
 
+/**
+ * Controls visibility state for mobile navigation panel.
+ */
 const isMobileMenuOpen = ref(false);
 
+/**
+ * Toggles mobile navigation visibility.
+ */
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
 
+/**
+ * Closes mobile menu, used after navigation click.
+ */
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false;
 };

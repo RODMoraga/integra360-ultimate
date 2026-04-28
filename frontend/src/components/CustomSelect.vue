@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div ref="containerRef" class="relative">
     <!-- Label -->
     <label
       v-if="label"
@@ -131,12 +131,18 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
 
+/**
+ * Select option contract used by custom select component.
+ */
 export interface SelectOption {
   label: string;
   value: string | number;
   disabled?: boolean;
 }
 
+/**
+ * Props contract and defaults for custom select behavior.
+ */
 const props = withDefaults(
   defineProps<{
     id?: string;
@@ -162,6 +168,9 @@ const props = withDefaults(
   }
 );
 
+/**
+ * Emits both v-model update and change notifications.
+ */
 const emit = defineEmits<{
   "update:modelValue": [value: string | number | (string | number)[]];
   change: [value: string | number | (string | number)[]];
@@ -170,8 +179,12 @@ const emit = defineEmits<{
 const isOpen = ref(false);
 const searchQuery = ref("");
 const highlightedIndex = ref(0);
-const searchInput = ref<HTMLInputElement>();
+const searchInput = ref<HTMLInputElement | null>(null);
+const containerRef = ref<HTMLElement | null>(null);
 
+/**
+ * Filters options by disabled state and optional search query.
+ */
 const filteredOptions = computed(() => {
   if (!props.searchable || !searchQuery.value) {
     return props.options.filter(opt => !opt.disabled);
@@ -183,6 +196,9 @@ const filteredOptions = computed(() => {
   );
 });
 
+/**
+ * Derives display label for current selected value(s).
+ */
 const displayValue = computed(() => {
   if (!props.modelValue) return "";
   if (Array.isArray(props.modelValue)) {
@@ -196,6 +212,9 @@ const displayValue = computed(() => {
   return selected?.label || "";
 });
 
+/**
+ * Opens/closes dropdown and focuses search input when available.
+ */
 const toggleDropdown = () => {
   if (!props.disabled) {
     isOpen.value = !isOpen.value;
@@ -207,10 +226,16 @@ const toggleDropdown = () => {
   }
 };
 
+/**
+ * Closes dropdown panel.
+ */
 const closeDropdown = () => {
   isOpen.value = false;
 };
 
+/**
+ * Checks whether an option belongs to selected model value.
+ */
 const isOptionSelected = (option: SelectOption) => {
   if (Array.isArray(props.modelValue)) {
     return props.modelValue.includes(option.value);
@@ -218,6 +243,9 @@ const isOptionSelected = (option: SelectOption) => {
   return props.modelValue === option.value;
 };
 
+/**
+ * Applies selected option to model (single/multiple mode).
+ */
 const selectOption = (option: SelectOption) => {
   if (props.multiple) {
     const newValue = Array.isArray(props.modelValue) ? [...props.modelValue] : [];
@@ -236,31 +264,48 @@ const selectOption = (option: SelectOption) => {
   }
 };
 
+/**
+ * Selects currently highlighted option from keyboard interaction.
+ */
 const selectHighlighted = () => {
   if (filteredOptions.value[highlightedIndex.value]) {
     selectOption(filteredOptions.value[highlightedIndex.value]);
   }
 };
 
+/**
+ * Moves keyboard highlight to next option.
+ */
 const highlightNext = () => {
   if (highlightedIndex.value < filteredOptions.value.length - 1) {
     highlightedIndex.value++;
   }
 };
 
+/**
+ * Moves keyboard highlight to previous option.
+ */
 const highlightPrev = () => {
   if (highlightedIndex.value > 0) {
     highlightedIndex.value--;
   }
 };
 
-// Close dropdown cuando hace click afuera
+/**
+ * Closes dropdown when clicking outside the component root.
+ */
 const handleClickOutside = (event: MouseEvent) => {
-  if (!(event.target as HTMLElement).closest(`#${props.id}`)) {
+  const target = event.target as Node | null;
+  if (!target || !containerRef.value) return;
+
+  if (!containerRef.value.contains(target)) {
     closeDropdown();
   }
 };
 
+/**
+ * Registers/unregisters global click listener while dropdown is open.
+ */
 watch(isOpen, (newValue) => {
   if (newValue) {
     document.addEventListener("click", handleClickOutside);
@@ -269,7 +314,9 @@ watch(isOpen, (newValue) => {
   }
 });
 
-// Cleanup
+/**
+ * Cleanup hook for global event listeners.
+ */
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
 });

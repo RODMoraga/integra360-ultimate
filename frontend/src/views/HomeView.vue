@@ -115,4 +115,8 @@
 import { RouterLink } from "vue-router";
 import SearchFilters from "../components/SearchFilters.vue";
 import ProductCatalog from "../components/ProductCatalog.vue";
+
+/**
+ * Public landing page composed by hero, filters and catalog sections.
+ */
 </script>

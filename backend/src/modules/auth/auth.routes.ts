@@ -3,6 +3,9 @@ import { authController } from "./auth.controller";
 import { validateRequest } from "../../common/middleware/validate-request";
 import { loginSchema, registerSchema } from "./auth.schema";
 
+/**
+ * Authentication routes.
+ */
 const router = Router();
 
 router.post("/register", validateRequest(registerSchema), (req, res, next) => {
