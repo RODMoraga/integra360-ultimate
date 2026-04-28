@@ -103,7 +103,14 @@ class CompanyRepository {
    * Inserts a new company record.
    */
   create(data: CreateCompanyInput) {
-    return prisma.companies.create({ data });
+    const now = new Date();
+    return prisma.companies.create({
+      data: {
+        ...data,
+        created_at: now,
+        updated_at: now
+      }
+    });
   }
 
   /**

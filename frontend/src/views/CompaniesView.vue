@@ -57,33 +57,56 @@
             </div>
 
             <div v-else>
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <div class="input-group" style="max-width: 420px;">
+                  <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                  <input
+                    v-model="searchQuery"
+                    type="search"
+                    class="form-control"
+                    placeholder="Buscar por código, razón social, RUT, email o comuna"
+                    aria-label="Buscar empresas"
+                  />
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <label for="companiesPageSize" class="small text-secondary mb-0">Mostrar</label>
+                  <select id="companiesPageSize" v-model.number="pageSize" class="form-select form-select-sm" style="width: 88px;">
+                    <option :value="5">5</option>
+                    <option :value="10">10</option>
+                    <option :value="25">25</option>
+                    <option :value="50">50</option>
+                  </select>
+                  <span class="small text-secondary">registros</span>
+                </div>
+              </div>
+
               <div class="table-responsive">
                 <table
                   id="companiesTable"
-                  ref="tableRef"
                   class="table table-hover align-middle table-striped w-100"
                 >
                   <thead class="table-dark">
                     <tr>
-                      <th>ID</th>
-                      <th>Código</th>
-                      <th>Razón Social</th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('id')">ID <i :class="sortIcon('id')"></i></button></th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('code')">Código <i :class="sortIcon('code')"></i></button></th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('legal_name')">Razón Social <i :class="sortIcon('legal_name')"></i></button></th>
                       <th>Nombre Comercial</th>
                       <th>RUT / Tax ID</th>
                       <th>Giro</th>
                       <th>Email</th>
                       <th>Teléfono</th>
                       <th>Dirección</th>
-                      <th>Comuna</th>
-                      <th>Zona Horaria</th>
-                      <th>Moneda</th>
-                      <th>Estado</th>
-                      <th>Creado</th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('commune_name')">Comuna <i :class="sortIcon('commune_name')"></i></button></th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('timezone')">Zona Horaria <i :class="sortIcon('timezone')"></i></button></th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('currency_code')">Moneda <i :class="sortIcon('currency_code')"></i></button></th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('is_active')">Estado <i :class="sortIcon('is_active')"></i></button></th>
+                      <th><button type="button" class="table-sort-btn" @click="toggleSort('created_at')">Creado <i :class="sortIcon('created_at')"></i></button></th>
                       <th class="text-center">Acción</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="company in companies" :key="company.id">
+                    <tr v-for="company in paginatedCompanies" :key="company.id">
                       <td class="text-secondary small">{{ company.id }}</td>
                       <td><span class="badge bg-secondary-subtle text-secondary fw-semibold">{{ company.code }}</span></td>
                       <td class="fw-semibold">{{ company.legal_name }}</td>
@@ -118,7 +141,6 @@
                           <button
                             class="btn btn-sm btn-outline-info rounded-3 px-2"
                             @click="openViewModal(company)"
-                            data-bs-toggle="tooltip"
                             title="Ver detalle"
                           >
                             <i class="fa-solid fa-eye"></i>
@@ -126,7 +148,6 @@
                           <button
                             class="btn btn-sm btn-outline-warning rounded-3 px-2"
                             @click="openEditModal(company)"
-                            data-bs-toggle="tooltip"
                             title="Editar empresa"
                           >
                             <i class="fa-solid fa-pen-to-square"></i>
@@ -134,7 +155,6 @@
                           <button
                             class="btn btn-sm btn-outline-danger rounded-3 px-2"
                             @click="confirmDelete(company)"
-                            data-bs-toggle="tooltip"
                             title="Eliminar empresa"
                           >
                             <i class="fa-solid fa-trash"></i>
@@ -142,8 +162,30 @@
                         </div>
                       </td>
                     </tr>
+
+                    <tr v-if="paginatedCompanies.length === 0">
+                      <td colspan="15" class="text-center text-secondary py-4">No se encontraron empresas para el filtro actual.</td>
+                    </tr>
                   </tbody>
                 </table>
+              </div>
+
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
+                <p class="small text-secondary mb-0">
+                  Mostrando {{ paginationStart }} a {{ paginationEnd }} de {{ filteredCompanies.length }} registros
+                </p>
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="Paginación empresas">
+                  <button type="button" class="btn btn-outline-secondary" :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" disabled>
+                    Página {{ currentPage }} / {{ totalPages }}
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -404,12 +446,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
-import { Modal, Tooltip } from "bootstrap";
+import { ref, computed, nextTick, onBeforeUnmount, onMounted, watch } from "vue";
+import { Modal } from "bootstrap";
 import Swal from "sweetalert2";
-import DataTable from "datatables.net-vue3";
-import DataTablesCore from "datatables.net-bs5";
-import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 
 import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
@@ -418,8 +457,7 @@ import CustomSelect from "../components/CustomSelect.vue";
 import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany } from "../composables/useCompanies";
 import type { CompanyItem } from "../services/company.service";
 import type { SelectOption } from "../components/CustomSelect.vue";
-
-DataTable.use(DataTablesCore);
+import { formatDate } from "../utils/datetime";
 
 /* ─── Sub-component for detail rows ─── */
 const DetailRow = {
@@ -442,19 +480,24 @@ const { mutateAsync: updateCompany } = useUpdateCompany();
 const { mutateAsync: deleteCompany } = useDeleteCompany();
 
 const sidebarOpen = ref(false);
-const tableRef = ref<HTMLElement | null>(null);
 const formModalRef = ref<HTMLElement | null>(null);
 const viewModalRef = ref<HTMLElement | null>(null);
 
 let formModalInstance: Modal | null = null;
 let viewModalInstance: Modal | null = null;
-let dtInstance: ReturnType<typeof DataTablesCore> | null = null;
+let isComponentActive = true;
+let pendingEditTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const companies = computed(() => data.value ?? []);
 const selectedCompany = ref<CompanyItem | null>(null);
 const isEditMode = ref(false);
 const isSaving = ref(false);
 const editingId = ref<string | null>(null);
+const searchQuery = ref("");
+const pageSize = ref(10);
+const currentPage = ref(1);
+const sortKey = ref<"id" | "code" | "legal_name" | "commune_name" | "timezone" | "currency_code" | "is_active" | "created_at">("created_at");
+const sortDirection = ref<"asc" | "desc">("desc");
 
 const emptyForm = () => ({
   code: "",
@@ -490,66 +533,161 @@ const currencyOptions: SelectOption[] = [
   { label: "ARS - Peso Argentino", value: "ARS" }
 ];
 
-/* ─── DataTable init/reinit ─── */
-/**
- * Initializes or reinitializes DataTables after DOM updates.
- * Ensures only one instance remains alive to avoid memory leaks.
- */
-const initDataTable = () => {
-  if (!tableRef.value) return;
-  if (dtInstance) {
-    dtInstance.destroy();
-    dtInstance = null;
+const filteredCompanies = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  if (!query) {
+    return companies.value;
   }
-  nextTick(() => {
-    dtInstance = new DataTablesCore(tableRef.value as HTMLTableElement, {
-      language: {
-        url: "https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json"
-      },
-      responsive: true,
-      pageLength: 10,
-      lengthMenu: [5, 10, 25, 50],
-      order: [[0, "desc"]]
-    });
+
+  return companies.value.filter((company) => {
+    const searchable = [
+      String(company.id),
+      company.code,
+      company.legal_name,
+      company.trade_name ?? "",
+      company.tax_id,
+      company.industry_type ?? "",
+      company.email ?? "",
+      company.phone ?? "",
+      company.address_line ?? "",
+      company.commune_name ?? "",
+      company.timezone,
+      company.currency_code,
+      company.is_active ? "activo" : "inactivo"
+    ].join(" ").toLowerCase();
+
+    return searchable.includes(query);
   });
+});
+
+const getComparableValue = (company: CompanyItem, key: typeof sortKey.value): string | number => {
+  switch (key) {
+    case "id":
+      return Number(company.id);
+    case "created_at":
+      return company.created_at ? new Date(company.created_at).getTime() : 0;
+    case "is_active":
+      return company.is_active ? 1 : 0;
+    default:
+      return (company[key] ?? "").toString().toLowerCase();
+  }
 };
 
-watch(
-  () => data.value,
-  () => {
-    nextTick(initDataTable);
+const sortedCompanies = computed(() => {
+  const list = [...filteredCompanies.value];
+  const direction = sortDirection.value === "asc" ? 1 : -1;
+
+  list.sort((a, b) => {
+    const left = getComparableValue(a, sortKey.value);
+    const right = getComparableValue(b, sortKey.value);
+
+    if (left === right) {
+      return 0;
+    }
+
+    if (typeof left === "number" && typeof right === "number") {
+      return (left - right) * direction;
+    }
+
+    return String(left).localeCompare(String(right), "es") * direction;
+  });
+
+  return list;
+});
+
+const totalPages = computed(() => Math.max(1, Math.ceil(sortedCompanies.value.length / pageSize.value)));
+
+const paginatedCompanies = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return sortedCompanies.value.slice(start, start + pageSize.value);
+});
+
+const paginationStart = computed(() => {
+  if (filteredCompanies.value.length === 0) {
+    return 0;
   }
-);
+  return (currentPage.value - 1) * pageSize.value + 1;
+});
+
+const paginationEnd = computed(() => {
+  if (filteredCompanies.value.length === 0) {
+    return 0;
+  }
+  return Math.min(currentPage.value * pageSize.value, filteredCompanies.value.length);
+});
+
+const toggleSort = (key: typeof sortKey.value) => {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
+  } else {
+    sortKey.value = key;
+    sortDirection.value = "asc";
+  }
+};
+
+const sortIcon = (key: typeof sortKey.value) => {
+  if (sortKey.value !== key) {
+    return "fa-solid fa-sort text-secondary opacity-75 ms-1";
+  }
+
+  return sortDirection.value === "asc"
+    ? "fa-solid fa-sort-up ms-1"
+    : "fa-solid fa-sort-down ms-1";
+};
+
+const goToPage = (page: number) => {
+  const safePage = Math.min(Math.max(page, 1), totalPages.value);
+  currentPage.value = safePage;
+};
+
+watch([searchQuery, pageSize], () => {
+  currentPage.value = 1;
+});
+
+watch(totalPages, (maxPages) => {
+  if (currentPage.value > maxPages) {
+    currentPage.value = maxPages;
+  }
+});
 
 onMounted(() => {
   if (formModalRef.value) formModalInstance = new Modal(formModalRef.value);
   if (viewModalRef.value) viewModalInstance = new Modal(viewModalRef.value);
-
-  // Init tooltips
-  nextTick(() => {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
-  });
 });
 
-onUnmounted(() => {
-  dtInstance?.destroy();
+onBeforeUnmount(() => {
+  isComponentActive = false;
+
+  if (pendingEditTimeout) {
+    clearTimeout(pendingEditTimeout);
+    pendingEditTimeout = null;
+  }
+
+  formModalInstance?.hide();
+  viewModalInstance?.hide();
+  formModalInstance?.dispose();
+  viewModalInstance?.dispose();
+  formModalInstance = null;
+  viewModalInstance = null;
 });
 
 /* ─── Helpers ─── */
 /**
  * Formats ISO date strings using `es-CL` locale.
  */
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
-
 /* ─── Modal actions ─── */
 /**
  * Opens the create modal and resets form state.
  */
-function openCreateModal() {
+async function openCreateModal() {
+  if (!isComponentActive) return;
   isEditMode.value = false;
   editingId.value = null;
   form.value = emptyForm();
+
+  await nextTick();
+  if (!isComponentActive) return;
+
   // Reset to first tab
   const firstTab = document.getElementById("tab-general");
   if (firstTab) (firstTab as HTMLElement).click();
@@ -559,7 +697,8 @@ function openCreateModal() {
 /**
  * Opens edit modal and hydrates form from selected company.
  */
-function openEditModal(company: CompanyItem) {
+async function openEditModal(company: CompanyItem) {
+  if (!isComponentActive) return;
   isEditMode.value = true;
   editingId.value = company.id;
   form.value = {
@@ -575,6 +714,10 @@ function openEditModal(company: CompanyItem) {
     currency_code: company.currency_code,
     is_active: company.is_active
   };
+
+  await nextTick();
+  if (!isComponentActive) return;
+
   const firstTab = document.getElementById("tab-general");
   if (firstTab) (firstTab as HTMLElement).click();
   formModalInstance?.show();
@@ -584,17 +727,26 @@ function openEditModal(company: CompanyItem) {
  * Opens read-only detail modal.
  */
 function openViewModal(company: CompanyItem) {
+  if (!isComponentActive) return;
   selectedCompany.value = company;
-  viewModalInstance?.show();
+
+  nextTick(() => {
+    if (!isComponentActive) return;
+    viewModalInstance?.show();
+  });
 }
 
 /**
  * Jumps from detail modal to edit modal preserving selected company.
  */
 function openEditFromView() {
-  if (!selectedCompany.value) return;
+  if (!isComponentActive || !selectedCompany.value) return;
   viewModalInstance?.hide();
-  setTimeout(() => openEditModal(selectedCompany.value!), 350);
+  pendingEditTimeout = setTimeout(() => {
+    pendingEditTimeout = null;
+    if (!isComponentActive || !selectedCompany.value) return;
+    void openEditModal(selectedCompany.value);
+  }, 350);
 }
 
 /* ─── Submit ─── */
@@ -695,6 +847,14 @@ async function confirmDelete(company: CompanyItem) {
 
 <style scoped>
 .text-brick-ember { color: #d44c2b; }
+
+.table-sort-btn {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  padding: 0;
+}
 
 /* Scrollable tab content */
 #companyFormTabs .nav-link {

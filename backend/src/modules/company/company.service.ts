@@ -1,4 +1,5 @@
 import { AppError } from "../../common/errors/app-error";
+import { toUtcIsoString } from "../../common/utils/datetime";
 import { companyRepository, CreateCompanyInput, UpdateCompanyInput } from "./company.repository";
 
 /**
@@ -27,7 +28,7 @@ class CompanyService {
    * Creates a new company after validating unique constraints.
    * @throws AppError when `code` or `tax_id` already exists.
    */
-  async create(dto: CreateCompanyInput & { commune_id?: number }) {
+  async create(dto: Omit<CreateCompanyInput, "commune_id"> & { commune_id?: number }) {
     // Validate uniqueness before insert.
     const existing = await companyRepository.findByCode(dto.code);
     if (existing) throw new AppError("El código de empresa ya existe", 409);
@@ -48,7 +49,7 @@ class CompanyService {
    * Updates an existing company.
    * @throws AppError when the company does not exist.
    */
-  async update(id: bigint, dto: UpdateCompanyInput & { commune_id?: number }) {
+  async update(id: bigint, dto: Omit<UpdateCompanyInput, "commune_id"> & { commune_id?: number }) {
     await this.getById(id);
 
     const data: UpdateCompanyInput = {
@@ -93,8 +94,8 @@ class CompanyService {
       timezone: c.timezone,
       currency_code: c.currency_code,
       is_active: c.is_active,
-      created_at: c.created_at,
-      updated_at: c.updated_at
+      created_at: toUtcIsoString(c.created_at),
+      updated_at: toUtcIsoString(c.updated_at)
     };
   }
 }

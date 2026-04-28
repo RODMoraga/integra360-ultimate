@@ -103,6 +103,14 @@
         />
 
         <SidebarItem
+          icon="fa-solid fa-shield-halved"
+          label="Roles"
+          to="/roles"
+          :active="currentPath === '/roles'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
           icon="fa-solid fa-gear"
           label="Configuración"
           to="/configuracion"

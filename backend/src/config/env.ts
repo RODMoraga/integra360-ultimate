@@ -6,6 +6,10 @@ import { z } from "zod";
  */
 dotenv.config();
 
+if (!process.env.TZ) {
+  process.env.TZ = "UTC";
+}
+
 /**
  * Runtime environment contract validated at bootstrap time.
  */
@@ -36,7 +40,8 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
 
   // ── Localización ─────────────────────────────────────────────────────────
-  TZ: z.string().default("America/Santiago"),
+  TZ: z.string().default("UTC"),
+  DB_SESSION_TIME_ZONE: z.string().regex(/^(UTC|[+-]\d{2}:\d{2})$/).default("+00:00"),
   APP_LOCALE: z.string().default("es-CL"),
   APP_CURRENCY: z.string().length(3).default("CLP"),
   APP_DECIMAL_SEPARATOR: z.string().default(","),

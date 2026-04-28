@@ -6,6 +6,7 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import UsersView from "../views/UsersView.vue";
 import CompaniesView from "../views/CompaniesView.vue";
+import RolesView from "../views/RolesView.vue";
 
 /**
  * Application router with public and protected routes.
@@ -50,7 +51,9 @@ export const router = createRouter({
       name: "users",
       component: UsersView,
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Usuarios - Integra360"
       }
     },
     {
@@ -61,6 +64,16 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true,
         title: "Empresas - Integra360"
+      }
+    },
+    {
+      path: "/roles",
+      name: "roles",
+      component: RolesView,
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Roles - Integra360"
       }
     }
   ]

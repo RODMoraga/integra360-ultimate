@@ -27,6 +27,10 @@ export class AuthService {
       companyId: input.companyId
     });
 
+    if (!user) {
+      throw new AppError("Unable to register user", 500);
+    }
+
     return this.signToken({ id: Number(user.id), email: user.email, companyId: Number(user.company_id) });
   }
 

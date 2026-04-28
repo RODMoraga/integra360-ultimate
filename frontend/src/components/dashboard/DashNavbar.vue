@@ -96,6 +96,7 @@ interface Crumb { label: string; path: string }
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/users": "Usuarios",
+  "/roles": "Roles",
   "/ventas": "Ventas",
   "/ventas/nueva": "Nueva Venta",
   "/ventas/historial": "Historial",
