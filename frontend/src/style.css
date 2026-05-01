@@ -1,6 +1,7 @@
 /* Base third-party UI layers loaded before project styles. */
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "primeicons/primeicons.css";
+@import "datatables.net-bs5/css/dataTables.bootstrap5.css";
 
 /* Tailwind layer directives: reset, component presets and utilities. */
 @tailwind base;

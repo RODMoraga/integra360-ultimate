@@ -53,12 +53,16 @@
         <SidebarGroup icon="fa-solid fa-boxes-stacked" label="Inventario" :open="openGroups.inventario" @toggle="toggleGroup('inventario')">
           <SidebarSubItem label="Productos" to="/inventario/productos" @click="$emit('close')" />
           <SidebarSubItem label="Categorías" to="/inventario/categorias" @click="$emit('close')" />
+          <SidebarSubItem label="Subcategorías" to="/inventario/subcategorias" @click="$emit('close')" />
+          <SidebarSubItem label="Marcas" to="/inventario/marcas" @click="$emit('close')" />
+          <SidebarSubItem label="Modelos" to="/inventario/modelos" @click="$emit('close')" />
           <SidebarSubItem label="Movimientos" to="/inventario/movimientos" @click="$emit('close')" />
         </SidebarGroup>
 
         <!-- Clientes -->
         <SidebarGroup icon="fa-solid fa-users" label="Clientes" :open="openGroups.clientes" @toggle="toggleGroup('clientes')">
           <SidebarSubItem label="Lista de Clientes" to="/clientes" @click="$emit('close')" />
+          <SidebarSubItem label="Contactos" to="/clientes/contactos" @click="$emit('close')" />
           <SidebarSubItem label="Segmentos" to="/clientes/segmentos" @click="$emit('close')" />
         </SidebarGroup>
       </div>
@@ -109,6 +113,60 @@
           :active="currentPath === '/roles'"
           @click="$emit('close')"
         />
+
+        <SidebarItem
+          icon="fa-solid fa-key"
+          label="Permisos"
+          to="/permisos"
+          :active="currentPath === '/permisos'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-map"
+          label="Regiones"
+          to="/regiones"
+          :active="currentPath === '/regiones'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-city"
+          label="Ciudades"
+          to="/ciudades"
+          :active="currentPath === '/ciudades'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-map-location-dot"
+          label="Comunas"
+          to="/comunas"
+          :active="currentPath === '/comunas'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-warehouse"
+          label="Bodegas"
+          to="/bodegas"
+          :active="currentPath === '/bodegas'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-user-group"
+          label="Clientes"
+          to="/clientes"
+          :active="currentPath === '/clientes'"
+          @click="$emit('close')"
+        />
+
+        <!-- Proveedores -->
+        <SidebarGroup icon="fa-solid fa-truck-field" label="Proveedores" :open="openGroups.proveedores" @toggle="toggleGroup('proveedores')">
+          <SidebarSubItem label="Lista de Proveedores" to="/proveedores" @click="$emit('close')" />
+          <SidebarSubItem label="Contactos" to="/proveedores/contactos" @click="$emit('close')" />
+        </SidebarGroup>
 
         <SidebarItem
           icon="fa-solid fa-gear"
@@ -172,7 +230,8 @@ const userRole = computed(() => sessionStore.user?.role ?? "Administrador");
 const openGroups = reactive({
   ventas: false,
   inventario: false,
-  clientes: false
+  clientes: false,
+  proveedores: false
 });
 
 /**

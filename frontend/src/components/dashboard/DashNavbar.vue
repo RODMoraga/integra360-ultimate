@@ -104,9 +104,15 @@ const ROUTE_LABELS: Record<string, string> = {
   "/inventario": "Inventario",
   "/inventario/productos": "Productos",
   "/inventario/categorias": "Categorías",
+  "/inventario/subcategorias": "Subcategorías",
+  "/inventario/marcas": "Marcas",
+  "/inventario/modelos": "Modelos",
   "/inventario/movimientos": "Movimientos",
   "/clientes": "Clientes",
+  "/clientes/contactos": "Contactos de Clientes",
   "/clientes/segmentos": "Segmentos",
+  "/proveedores": "Proveedores",
+  "/proveedores/contactos": "Contactos de Proveedores",
   "/reportes": "Reportes",
   "/configuracion": "Configuración"
 };
