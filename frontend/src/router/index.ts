@@ -128,6 +128,16 @@ export const router = createRouter({
       }
     },
     {
+      path: "/documentos/secuencias",
+      name: "documentos-secuencias",
+      component: () => import("../views/DocumentSequencesView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Secuencias de Documentos - Integra360"
+      }
+    },
+    {
       path: "/regiones",
       name: "regiones",
       component: () => import("../views/RegionsView.vue"),
@@ -225,6 +235,16 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true,
         title: "Imágenes Productos - Integra360"
+      }
+    },
+    {
+      path: "/inventario/activos-digitales",
+      name: "inventario-activos-digitales",
+      component: () => import("../views/DigitalAssetsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Activos Digitales - Integra360"
       }
     },
     {

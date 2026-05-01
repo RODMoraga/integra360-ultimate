@@ -21,6 +21,8 @@ import { unitOfMeasureRoutes } from "../modules/unit_of_measure/unit_of_measure.
 import { productImageRoutes } from "../modules/product_image/product_image.routes";
 import { productVariantRoutes } from "../modules/product_variant/product_variant.routes";
 import { documentTypeRoutes } from "../modules/document_type/document_type.routes";
+import { digitalAssetRoutes } from "../modules/digital_asset/digital_asset.routes";
+import { documentSequenceRoutes } from "../modules/document_sequence/document_sequence.routes";
 
 const router = Router();
 
@@ -50,5 +52,7 @@ router.use("/units-of-measure", unitOfMeasureRoutes);
 router.use("/product-images", productImageRoutes);
 router.use("/product-variants", productVariantRoutes);
 router.use("/document-types", documentTypeRoutes);
+router.use("/digital-assets", digitalAssetRoutes);
+router.use("/document-sequences", documentSequenceRoutes);
 
 export const apiRoutes = router;

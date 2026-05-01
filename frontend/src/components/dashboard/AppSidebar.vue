@@ -59,6 +59,7 @@
           <SidebarSubItem label="Modelos" to="/inventario/modelos" @click="$emit('close')" />
           <SidebarSubItem label="Unidades de Medida" to="/inventario/unidades-de-medida" @click="$emit('close')" />
           <SidebarSubItem label="Imágenes Productos" to="/inventario/imagenes-productos" @click="$emit('close')" />
+          <SidebarSubItem label="Activos Digitales" to="/inventario/activos-digitales" @click="$emit('close')" />
           <SidebarSubItem label="Movimientos" to="/inventario/movimientos" @click="$emit('close')" />
         </SidebarGroup>
 
@@ -130,6 +131,14 @@
           label="Tipos Documentos"
           to="/documentos/tipos"
           :active="currentPath === '/documentos/tipos'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-hashtag"
+          label="Secuencias Documentos"
+          to="/documentos/secuencias"
+          :active="currentPath === '/documentos/secuencias'"
           @click="$emit('close')"
         />
 
