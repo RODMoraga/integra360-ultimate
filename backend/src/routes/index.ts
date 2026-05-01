@@ -23,6 +23,9 @@ import { productVariantRoutes } from "../modules/product_variant/product_variant
 import { documentTypeRoutes } from "../modules/document_type/document_type.routes";
 import { digitalAssetRoutes } from "../modules/digital_asset/digital_asset.routes";
 import { documentSequenceRoutes } from "../modules/document_sequence/document_sequence.routes";
+import { documentRoutes } from "../modules/document/document.routes";
+import { posTerminalRoutes } from "../modules/pos_terminal/pos_terminal.routes";
+import { cashRegisterRoutes } from "../modules/cash_register/cash_register.routes";
 
 const router = Router();
 
@@ -54,5 +57,8 @@ router.use("/product-variants", productVariantRoutes);
 router.use("/document-types", documentTypeRoutes);
 router.use("/digital-assets", digitalAssetRoutes);
 router.use("/document-sequences", documentSequenceRoutes);
+router.use("/documents", documentRoutes);
+router.use("/pos-terminals", posTerminalRoutes);
+router.use("/cash-registers", cashRegisterRoutes);
 
 export const apiRoutes = router;

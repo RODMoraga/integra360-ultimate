@@ -15,7 +15,15 @@
     "prisma:studio": "prisma studio",
     "prisma:seed:digital-assets": "prisma db execute --schema prisma/schema.prisma --file prisma/digital-assets.seed.sql",
     "prisma:seed:product-images": "prisma db execute --schema prisma/schema.prisma --file prisma/product-images.seed.sql",
-    "prisma:seed:document-sequences": "prisma db execute --schema prisma/schema.prisma --file prisma/document-sequences.seed.sql"
+    "prisma:seed:document-sequences": "prisma db execute --schema prisma/schema.prisma --file prisma/document-sequences.seed.sql",
+    "prisma:seed:documents": "prisma db execute --schema prisma/schema.prisma --file prisma/documents.seed.sql",
+    "prisma:seed:pos-terminals": "prisma db execute --schema prisma/schema.prisma --file prisma/pos-terminals.seed.sql",
+    "prisma:seed:cash-registers": "prisma db execute --schema prisma/schema.prisma --file prisma/cash-registers.seed.sql",
+    "smoke:documents": "node scripts/smoke-test-documents.mjs",
+    "smoke:pos-terminals:run": "node scripts/smoke-test-pos-terminals.mjs",
+    "smoke:pos-terminals": "npm run prisma:seed:pos-terminals && npm run smoke:pos-terminals:run",
+    "smoke:cash-registers:run": "node scripts/smoke-test-cash-registers.mjs",
+    "smoke:cash-registers": "npm run prisma:seed:cash-registers && npm run smoke:cash-registers:run"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

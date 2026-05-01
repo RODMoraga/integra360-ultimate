@@ -118,6 +118,16 @@ export const router = createRouter({
       }
     },
     {
+      path: "/documentos",
+      name: "documentos",
+      component: () => import("../views/DocumentsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Documentos - Integra360"
+      }
+    },
+    {
       path: "/documentos/tipos",
       name: "documentos-tipos",
       component: () => import("../views/DocumentTypesView.vue"),
@@ -175,6 +185,16 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true,
         title: "Bodegas - Integra360"
+      }
+    },
+    {
+      path: "/terminales-pos",
+      name: "terminales-pos",
+      component: () => import("../views/PosTerminalsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Terminales POS - Integra360"
       }
     },
     {

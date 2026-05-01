@@ -127,6 +127,14 @@
         />
 
         <SidebarItem
+          icon="fa-solid fa-file-invoice"
+          label="Documentos"
+          to="/documentos"
+          :active="currentPath === '/documentos'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
           icon="fa-solid fa-file-lines"
           label="Tipos Documentos"
           to="/documentos/tipos"
@@ -171,6 +179,14 @@
           label="Bodegas"
           to="/bodegas"
           :active="currentPath === '/bodegas'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
+          icon="fa-solid fa-cash-register"
+          label="Terminales POS"
+          to="/terminales-pos"
+          :active="currentPath === '/terminales-pos'"
           @click="$emit('close')"
         />
 
