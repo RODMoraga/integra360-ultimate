@@ -103,6 +103,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "/ventas/devoluciones": "Devoluciones",
   "/inventario": "Inventario",
   "/inventario/productos": "Productos",
+  "/inventario/variantes-productos": "Variantes de Productos",
   "/inventario/categorias": "Categorías",
   "/inventario/subcategorias": "Subcategorías",
   "/inventario/marcas": "Marcas",

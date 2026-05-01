@@ -278,6 +278,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { Modal } from "bootstrap";
 import DataTable from "datatables.net-vue3";
 import DataTablesCore from "datatables.net-bs5";
+import type { Config } from "datatables.net";
 import Swal from "sweetalert2";
 
 import AppSidebar from "../components/dashboard/AppSidebar.vue";
@@ -440,7 +441,7 @@ const tableColumns = [
   { title: "Acción", data: "actions", orderable: false, searchable: false, className: "text-center" }
 ];
 
-const tableOptions = {
+const tableOptions: Config = {
   language: {
     search: "Buscar:",
     lengthMenu: "Mostrar _MENU_ registros",

@@ -967,11 +967,11 @@ function validateField(field: ProductFormField): string {
     error = "La unidad de medida es obligatoria.";
   }
 
-  if (field === "sale_price" && (f.sale_price === "" || Number(f.sale_price) < 0)) {
+  if (field === "sale_price" && (Number.isNaN(Number(f.sale_price)) || Number(f.sale_price) < 0)) {
     error = "El precio de venta debe ser 0 o mayor.";
   }
 
-  if (field === "cost_price" && (f.cost_price === "" || Number(f.cost_price) < 0)) {
+  if (field === "cost_price" && (Number.isNaN(Number(f.cost_price)) || Number(f.cost_price) < 0)) {
     error = "El precio de costo debe ser 0 o mayor.";
   }
 

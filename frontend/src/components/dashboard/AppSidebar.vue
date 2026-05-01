@@ -52,6 +52,7 @@
         <!-- Inventario -->
         <SidebarGroup icon="fa-solid fa-boxes-stacked" label="Inventario" :open="openGroups.inventario" @toggle="toggleGroup('inventario')">
           <SidebarSubItem label="Productos" to="/inventario/productos" @click="$emit('close')" />
+          <SidebarSubItem label="Variantes de Productos" to="/inventario/variantes-productos" @click="$emit('close')" />
           <SidebarSubItem label="Categorías" to="/inventario/categorias" @click="$emit('close')" />
           <SidebarSubItem label="Subcategorías" to="/inventario/subcategorias" @click="$emit('close')" />
           <SidebarSubItem label="Marcas" to="/inventario/marcas" @click="$emit('close')" />

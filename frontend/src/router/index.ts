@@ -1,28 +1,43 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { authService } from "../services/auth.service";
-import HomeView from "../views/HomeView.vue";
-import DashboardView from "../views/DashboardView.vue";
-import LoginView from "../views/LoginView.vue";
-import RegisterView from "../views/RegisterView.vue";
-import UsersView from "../views/UsersView.vue";
-import CompaniesView from "../views/CompaniesView.vue";
-import RolesView from "../views/RolesView.vue";
-import PermissionsView from "../views/PermissionsView.vue";
-import RegionsView from "../views/RegionsView.vue";
-import CitiesView from "../views/CitiesView.vue";
-import CommunesView from "../views/CommunesView.vue";
-import WarehousesView from "../views/WarehousesView.vue";
-import CustomersView from "../views/CustomersView.vue";
-import SuppliersView from "../views/SuppliersView.vue";
-import CustomerContactsView from "../views/CustomerContactsView.vue";
-import SupplierContactsView from "../views/SupplierContactsView.vue";
-import UnitsOfMeasureView from "../views/UnitsOfMeasureView.vue";
-import CategoriesView from "../views/CategoriesView.vue";
-import SubcategoriesView from "../views/SubcategoriesView.vue";
-import ModelsView from "../views/ModelsView.vue";
-import BrandsView from "../views/BrandsView.vue";
-import ProductsView from "../views/ProductsView.vue";
-import ProductImagesView from "../views/ProductImagesView.vue";
+
+// Reuse importers so they can be both routed and prefetched.
+const loadDashboardView = () => import("../views/DashboardView.vue");
+const loadProductsView = () => import("../views/ProductsView.vue");
+
+let criticalRoutesPrefetched = false;
+
+type IdleCapableWindow = Window & {
+  requestIdleCallback?: (
+    callback: (deadline: unknown) => void,
+    options?: { timeout?: number }
+  ) => number;
+};
+
+const runWhenBrowserIsIdle = (task: () => void) => {
+  const idleWindow = window as IdleCapableWindow;
+
+  if (typeof idleWindow.requestIdleCallback === "function") {
+    idleWindow.requestIdleCallback(() => task(), { timeout: 1500 });
+    return;
+  }
+
+  window.setTimeout(task, 800);
+};
+
+const scheduleCriticalPrefetch = () => {
+  if (criticalRoutesPrefetched || !authService.isAuthenticated()) {
+    return;
+  }
+
+  criticalRoutesPrefetched = true;
+
+  // Defer prefetch to an idle period to avoid impacting initial render/navigation work.
+  runWhenBrowserIsIdle(() => {
+    void loadDashboardView();
+    void loadProductsView();
+  });
+};
 
 /**
  * Application router with public and protected routes.
@@ -33,12 +48,12 @@ export const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: HomeView
+      component: () => import("../views/HomeView.vue")
     },
     {
       path: "/login",
       name: "login",
-      component: LoginView,
+      component: () => import("../views/LoginView.vue"),
       meta: {
         title: "Iniciar Sesión - Integra360",
         hideGlobalChrome: true
@@ -47,7 +62,7 @@ export const router = createRouter({
     {
       path: "/register",
       name: "register",
-      component: RegisterView,
+      component: () => import("../views/RegisterView.vue"),
       meta: {
         title: "Crear Cuenta - Integra360",
         hideGlobalChrome: true
@@ -56,7 +71,7 @@ export const router = createRouter({
     {
       path: "/dashboard",
       name: "dashboard",
-      component: DashboardView,
+      component: loadDashboardView,
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true
@@ -65,7 +80,7 @@ export const router = createRouter({
     {
       path: "/users",
       name: "users",
-      component: UsersView,
+      component: () => import("../views/UsersView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -75,7 +90,7 @@ export const router = createRouter({
     {
       path: "/empresas",
       name: "empresas",
-      component: CompaniesView,
+      component: () => import("../views/CompaniesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -85,7 +100,7 @@ export const router = createRouter({
     {
       path: "/roles",
       name: "roles",
-      component: RolesView,
+      component: () => import("../views/RolesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -95,7 +110,7 @@ export const router = createRouter({
     {
       path: "/permisos",
       name: "permisos",
-      component: PermissionsView,
+      component: () => import("../views/PermissionsView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -105,7 +120,7 @@ export const router = createRouter({
     {
       path: "/regiones",
       name: "regiones",
-      component: RegionsView,
+      component: () => import("../views/RegionsView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -115,7 +130,7 @@ export const router = createRouter({
     {
       path: "/ciudades",
       name: "ciudades",
-      component: CitiesView,
+      component: () => import("../views/CitiesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -125,7 +140,7 @@ export const router = createRouter({
     {
       path: "/comunas",
       name: "comunas",
-      component: CommunesView,
+      component: () => import("../views/CommunesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -135,7 +150,7 @@ export const router = createRouter({
     {
       path: "/bodegas",
       name: "bodegas",
-      component: WarehousesView,
+      component: () => import("../views/WarehousesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -145,7 +160,7 @@ export const router = createRouter({
     {
       path: "/inventario/categorias",
       name: "inventario-categorias",
-      component: CategoriesView,
+      component: () => import("../views/CategoriesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -155,7 +170,7 @@ export const router = createRouter({
     {
       path: "/inventario/subcategorias",
       name: "inventario-subcategorias",
-      component: SubcategoriesView,
+      component: () => import("../views/SubcategoriesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -165,7 +180,7 @@ export const router = createRouter({
     {
       path: "/inventario/modelos",
       name: "inventario-modelos",
-      component: ModelsView,
+      component: () => import("../views/ModelsView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -175,7 +190,7 @@ export const router = createRouter({
     {
       path: "/inventario/marcas",
       name: "inventario-marcas",
-      component: BrandsView,
+      component: () => import("../views/BrandsView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -185,7 +200,7 @@ export const router = createRouter({
     {
       path: "/inventario/productos",
       name: "inventario-productos",
-      component: ProductsView,
+      component: loadProductsView,
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -195,7 +210,7 @@ export const router = createRouter({
     {
       path: "/inventario/imagenes-productos",
       name: "inventario-imagenes-productos",
-      component: ProductImagesView,
+      component: () => import("../views/ProductImagesView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -203,9 +218,19 @@ export const router = createRouter({
       }
     },
     {
+      path: "/inventario/variantes-productos",
+      name: "inventario-variantes-productos",
+      component: () => import("../views/ProductVariantsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Variantes de Productos - Integra360"
+      }
+    },
+    {
       path: "/clientes",
       name: "clientes",
-      component: CustomersView,
+      component: () => import("../views/CustomersView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -215,7 +240,7 @@ export const router = createRouter({
     {
       path: "/proveedores",
       name: "proveedores",
-      component: SuppliersView,
+      component: () => import("../views/SuppliersView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -225,7 +250,7 @@ export const router = createRouter({
     {
       path: "/clientes/contactos",
       name: "clientes-contactos",
-      component: CustomerContactsView,
+      component: () => import("../views/CustomerContactsView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -235,7 +260,7 @@ export const router = createRouter({
     {
       path: "/proveedores/contactos",
       name: "proveedores-contactos",
-      component: SupplierContactsView,
+      component: () => import("../views/SupplierContactsView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -245,7 +270,7 @@ export const router = createRouter({
     {
       path: "/inventario/unidades-de-medida",
       name: "inventario-unidades-de-medida",
-      component: UnitsOfMeasureView,
+      component: () => import("../views/UnitsOfMeasureView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
@@ -273,4 +298,11 @@ router.beforeEach((to) => {
   }
 
   return true;
+});
+
+/**
+ * After each successful navigation, prefetch critical views for faster subsequent transitions.
+ */
+router.afterEach(() => {
+  scheduleCriticalPrefetch();
 });
