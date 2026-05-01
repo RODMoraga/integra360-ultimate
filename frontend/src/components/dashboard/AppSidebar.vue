@@ -56,6 +56,8 @@
           <SidebarSubItem label="Subcategorías" to="/inventario/subcategorias" @click="$emit('close')" />
           <SidebarSubItem label="Marcas" to="/inventario/marcas" @click="$emit('close')" />
           <SidebarSubItem label="Modelos" to="/inventario/modelos" @click="$emit('close')" />
+          <SidebarSubItem label="Unidades de Medida" to="/inventario/unidades-de-medida" @click="$emit('close')" />
+          <SidebarSubItem label="Imágenes Productos" to="/inventario/imagenes-productos" @click="$emit('close')" />
           <SidebarSubItem label="Movimientos" to="/inventario/movimientos" @click="$emit('close')" />
         </SidebarGroup>
 

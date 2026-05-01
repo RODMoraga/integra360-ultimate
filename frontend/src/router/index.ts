@@ -16,11 +16,13 @@ import CustomersView from "../views/CustomersView.vue";
 import SuppliersView from "../views/SuppliersView.vue";
 import CustomerContactsView from "../views/CustomerContactsView.vue";
 import SupplierContactsView from "../views/SupplierContactsView.vue";
+import UnitsOfMeasureView from "../views/UnitsOfMeasureView.vue";
 import CategoriesView from "../views/CategoriesView.vue";
 import SubcategoriesView from "../views/SubcategoriesView.vue";
 import ModelsView from "../views/ModelsView.vue";
 import BrandsView from "../views/BrandsView.vue";
 import ProductsView from "../views/ProductsView.vue";
+import ProductImagesView from "../views/ProductImagesView.vue";
 
 /**
  * Application router with public and protected routes.
@@ -191,6 +193,16 @@ export const router = createRouter({
       }
     },
     {
+      path: "/inventario/imagenes-productos",
+      name: "inventario-imagenes-productos",
+      component: ProductImagesView,
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Imágenes Productos - Integra360"
+      }
+    },
+    {
       path: "/clientes",
       name: "clientes",
       component: CustomersView,
@@ -228,6 +240,16 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true,
         title: "Contactos de Proveedores - Integra360"
+      }
+    },
+    {
+      path: "/inventario/unidades-de-medida",
+      name: "inventario-unidades-de-medida",
+      component: UnitsOfMeasureView,
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Unidades de Medida - Integra360"
       }
     }
   ]

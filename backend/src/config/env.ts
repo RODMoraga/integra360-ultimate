@@ -56,7 +56,7 @@ const envSchema = z.object({
 
   // ── Archivos ──────────────────────────────────────────────────────────────
   UPLOAD_MAX_SIZE: z.string().default("5mb"),
-  UPLOAD_DIR: z.string().default("./uploads")
+  UPLOAD_DIR: z.string().default("./upload")
 });
 
 /**

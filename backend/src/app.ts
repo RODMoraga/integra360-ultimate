@@ -1,6 +1,8 @@
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+import fs from "node:fs";
+import path from "node:path";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
 import { env } from "./config/env";
@@ -14,6 +16,9 @@ import { errorHandler } from "./common/middleware/error-handler";
  */
 export const createApp = () => {
   const app = express();
+  const uploadAbsolutePath = path.resolve(process.cwd(), env.UPLOAD_DIR);
+
+  fs.mkdirSync(uploadAbsolutePath, { recursive: true });
 
   app.use(helmet());
   app.use(
@@ -31,6 +36,7 @@ export const createApp = () => {
   );
   app.use(express.json({ limit: env.UPLOAD_MAX_SIZE }));
   app.use(pinoHttp({ logger }));
+  app.use("/upload", express.static(uploadAbsolutePath));
 
   app.use("/api", apiRoutes);
   app.use(notFoundHandler);
