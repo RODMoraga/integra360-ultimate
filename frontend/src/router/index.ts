@@ -118,6 +118,16 @@ export const router = createRouter({
       }
     },
     {
+      path: "/documentos/tipos",
+      name: "documentos-tipos",
+      component: () => import("../views/DocumentTypesView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Tipos de Documentos - Integra360"
+      }
+    },
+    {
       path: "/regiones",
       name: "regiones",
       component: () => import("../views/RegionsView.vue"),

@@ -20,6 +20,7 @@ import { supplierContactRoutes } from "../modules/supplier_contact/supplier_cont
 import { unitOfMeasureRoutes } from "../modules/unit_of_measure/unit_of_measure.routes";
 import { productImageRoutes } from "../modules/product_image/product_image.routes";
 import { productVariantRoutes } from "../modules/product_variant/product_variant.routes";
+import { documentTypeRoutes } from "../modules/document_type/document_type.routes";
 
 const router = Router();
 
@@ -48,5 +49,6 @@ router.use("/supplier-contacts", supplierContactRoutes);
 router.use("/units-of-measure", unitOfMeasureRoutes);
 router.use("/product-images", productImageRoutes);
 router.use("/product-variants", productVariantRoutes);
+router.use("/document-types", documentTypeRoutes);
 
 export const apiRoutes = router;

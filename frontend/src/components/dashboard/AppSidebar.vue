@@ -126,6 +126,14 @@
         />
 
         <SidebarItem
+          icon="fa-solid fa-file-lines"
+          label="Tipos Documentos"
+          to="/documentos/tipos"
+          :active="currentPath === '/documentos/tipos'"
+          @click="$emit('close')"
+        />
+
+        <SidebarItem
           icon="fa-solid fa-map"
           label="Regiones"
           to="/regiones"
