@@ -1,0 +1,61 @@
+name: Backend Products Seed CI
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-products-seed-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-products-seed-ci.yml"
+
+jobs:
+  products-seed-verification:
+    name: Products seed reset/seed/verify
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: integra360
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -prootpass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      DATABASE_URL: mysql://root:rootpass@127.0.0.1:3306/integra360
+      TZ: UTC
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (workspace)
+        run: npm ci
+
+      - name: Prisma generate
+        working-directory: backend
+        run: npm run prisma:generate
+
+      - name: Apply Prisma migrations
+        working-directory: backend
+        run: npx prisma migrate deploy --schema prisma/schema.prisma
+
+      - name: Run products seed CI flow
+        working-directory: backend
+        run: npm run prisma:seed:products:ci

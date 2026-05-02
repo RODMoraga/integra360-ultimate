@@ -1,8 +1,16 @@
 # Integra360
 
 [![Frontend CI](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/frontend-ci.yml)
+[![Backend Products Seed CI](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/backend-products-seed-ci.yml/badge.svg)](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/backend-products-seed-ci.yml)
+[![Release Unified Gate](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/release-unified-gate.yml/badge.svg)](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/release-unified-gate.yml)
 
 Arquitectura full-stack modular con Node.js + MySQL 8 + Vue 3, orientada a crecimiento, mantenibilidad y buenas practicas.
+
+## Politica de publicacion de release
+
+- El release solo se considera valido cuando el workflow Release Unified Gate termina en estado success.
+- Si un release falla en el gate, debe corregirse y volver a publicar.
+- Esta politica aplica aunque la publicacion se dispare manualmente.
 
 ## Stack principal
 
