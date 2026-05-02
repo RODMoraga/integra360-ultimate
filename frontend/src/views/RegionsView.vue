@@ -121,26 +121,26 @@
                       </td>
                       <td class="small text-secondary">{{ formatDate(region.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
                           <button
-                            class="btn btn-sm btn-outline-info rounded-3 px-2"
+                            class="btn btn-sm btn-outline-info"
                             @click="openViewModal(region)"
-                            title="Ver detalle"
+                            title="Ver detalle" aria-label="Ver detalle"
                           >
                             <i class="fa-solid fa-eye"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-warning rounded-3 px-2"
+                            class="btn btn-sm btn-outline-warning"
                             @click="openEditModal(region)"
-                            title="Editar región"
+                            title="Editar región" aria-label="Editar región"
                           >
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(region)"
                             :disabled="region.cities_count > 0"
-                            :title="region.cities_count > 0 ? `No se puede eliminar: tiene ${region.cities_count} ciudad(es) asociada(s)` : 'Eliminar región'"
+                            :title="region.cities_count > 0 ? `No se puede eliminar: tiene ${region.cities_count} ciudad(es) asociada(s)` : 'Eliminar región'" :aria-label="region.cities_count > 0 ? `No se puede eliminar: tiene ${region.cities_count} ciudad(es) asociada(s)` : 'Eliminar región'"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -698,3 +698,7 @@ async function confirmDelete(region: RegionItem) {
   padding: 0;
 }
 </style>
+
+
+
+

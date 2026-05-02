@@ -110,18 +110,18 @@
                       </td>
                       <td class="small text-secondary">{{ formatDate(subcategory.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
-                          <button class="btn btn-sm btn-outline-info rounded-3 px-2" @click="openViewModal(subcategory)" title="Ver detalle">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
+                          <button class="btn btn-sm btn-outline-info" @click="openViewModal(subcategory)" title="Ver detalle" aria-label="Ver detalle">
                             <i class="fa-solid fa-eye"></i>
                           </button>
-                          <button class="btn btn-sm btn-outline-warning rounded-3 px-2" @click="openEditModal(subcategory)" title="Editar subcategoría">
+                          <button class="btn btn-sm btn-outline-warning" @click="openEditModal(subcategory)" title="Editar subcategoría" aria-label="Editar subcategoría">
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(subcategory)"
                             :disabled="subcategory.dependencies_count > 0"
-                            :title="subcategory.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar subcategoría'"
+                            :title="subcategory.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar subcategoría'" :aria-label="subcategory.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar subcategoría'"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -807,3 +807,6 @@ async function confirmDelete(subcategory: SubcategoryItem) {
   box-shadow: 0 0 0 0.12rem rgba(220, 38, 38, 0.2);
 }
 </style>
+
+
+

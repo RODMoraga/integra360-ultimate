@@ -2,14 +2,14 @@
   <div>
     <button
       type="button"
-      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-black-300 hover:bg-ink-black-800 hover:text-white transition-all duration-150 group"
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-black-200 hover:bg-ink-black-800 hover:text-ink-black-50 transition-all duration-150 group"
       @click="$emit('toggle')"
     >
-      <i :class="[icon, 'w-4 text-center text-base flex-shrink-0 text-ink-black-400 group-hover:text-ink-black-200']"></i>
+      <i :class="[icon, 'w-4 text-center text-base flex-shrink-0 text-ink-black-300 group-hover:text-ink-black-100']"></i>
       <span class="flex-1 text-left truncate">{{ label }}</span>
       <i
         :class="[
-          'fa-solid fa-chevron-right text-xs text-ink-black-500 transition-transform duration-200',
+          'fa-solid fa-chevron-right text-xs text-ink-black-300 transition-transform duration-200',
           open ? 'rotate-90' : ''
         ]"
       ></i>

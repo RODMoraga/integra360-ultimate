@@ -19,9 +19,9 @@
     <!-- Brand logo -->
     <div class="flex items-center gap-3 px-5 py-5 border-b border-ink-black-800">
       <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-brick-ember-600">
-        <i class="fa-solid fa-circle-nodes text-white text-base"></i>
+        <i class="fa-solid fa-circle-nodes text-ink-black-100 text-base"></i>
       </div>
-      <span class="text-xl font-bold font-quicksand text-white tracking-wide">Integra<span class="text-brick-ember-400">360</span></span>
+      <span class="text-xl font-bold font-quicksand text-ink-black-100 tracking-wide">Integra<span class="text-brick-ember-300">360</span></span>
     </div>
 
     <!-- Navigation -->
@@ -29,7 +29,7 @@
 
       <!-- ── PRINCIPAL ──────────────────────────────────────────── -->
       <div class="px-3 mb-2">
-        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Principal</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-300 px-3 mb-2">Principal</p>
 
         <SidebarItem
           icon="fa-solid fa-gauge-high"
@@ -42,7 +42,7 @@
 
       <!-- ── GESTIÓN ─────────────────────────────────────────────── -->
       <div class="px-3 mb-2 mt-4">
-        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Gestión</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-300 px-3 mb-2">Gestión</p>
 
         <!-- Ventas -->
         <SidebarGroup icon="fa-solid fa-bag-shopping" label="Ventas" :open="openGroups.ventas" @toggle="toggleGroup('ventas')">
@@ -80,7 +80,7 @@
 
       <!-- ── ANÁLISIS ────────────────────────────────────────────── -->
       <div class="px-3 mb-2 mt-4">
-        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Análisis</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-300 px-3 mb-2">Análisis</p>
 
         <SidebarItem
           icon="fa-solid fa-chart-line"
@@ -101,7 +101,7 @@
 
       <!-- ── SISTEMA ──────────────────────────────────────────────── -->
       <div class="px-3 mb-2 mt-4">
-        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Sistema</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-300 px-3 mb-2">Sistema</p>
 
         <!-- Administración -->
         <SidebarGroup icon="fa-solid fa-shield-halved" label="Administración" :open="openGroups.administracion" @toggle="toggleGroup('administracion')">
@@ -145,15 +145,15 @@
     <div class="px-4 py-4 border-t border-ink-black-800 bg-ink-black-950">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-brick-ember-600 flex items-center justify-center flex-shrink-0">
-          <i class="fa-solid fa-user text-white text-sm"></i>
+          <i class="fa-solid fa-user text-ink-black-100 text-sm"></i>
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold text-white truncate">{{ userName }}</p>
-          <p class="text-xs text-ink-black-400 truncate">{{ userRole }}</p>
+          <p class="text-sm font-semibold text-ink-black-100 truncate">{{ userName }}</p>
+          <p class="text-xs text-ink-black-300 truncate">{{ userRole }}</p>
         </div>
         <button
           @click="handleLogout"
-          class="p-1.5 rounded-md text-ink-black-400 hover:text-white hover:bg-ink-black-800 transition-colors"
+          class="p-1.5 rounded-md text-ink-black-300 hover:text-ink-black-50 hover:bg-ink-black-800 transition-colors"
           title="Cerrar sesión"
         >
           <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>

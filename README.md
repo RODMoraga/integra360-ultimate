@@ -1,5 +1,7 @@
 # Integra360
 
+[![Frontend CI](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/RODMoraga/integra360-ultimate/actions/workflows/frontend-ci.yml)
+
 Arquitectura full-stack modular con Node.js + MySQL 8 + Vue 3, orientada a crecimiento, mantenibilidad y buenas practicas.
 
 ## Stack principal

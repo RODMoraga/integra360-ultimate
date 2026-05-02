@@ -1,0 +1,49 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
+jobs:
+  frontend-checks:
+    name: Frontend checks (table actions, contrast, test, build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Validate table action grouping
+        working-directory: frontend
+        run: npm run check:table-actions
+
+      - name: Validate Sidebar/Footer contrast
+        working-directory: frontend
+        run: npm run check:contrast:chrome
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm run test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:table-actions": "node scripts/verify-table-action-grouping.mjs",
+    "check:contrast:chrome": "node scripts/check-sidebar-footer-contrast.mjs"
   },
   "dependencies": {
     "@primevue/themes": "^4.1.0",

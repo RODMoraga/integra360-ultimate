@@ -466,14 +466,14 @@ const buildActionButtons = (variant: ProductVariantItem) => {
   const deleteTitle = disabledDelete ? "No se puede eliminar: tiene dependencias" : "Eliminar variante";
 
   return `
-    <div class="d-flex gap-1 justify-content-center">
-      <button type="button" class="btn btn-sm btn-outline-info rounded-3 px-2" data-action="view" data-id="${variant.id}" title="Ver detalle">
+    <div class="btn-group" role="group" aria-label="Acciones de fila">
+      <button type="button" class="btn btn-sm btn-outline-info" data-action="view" data-id="${variant.id}" title="Ver detalle" aria-label="Ver detalle">
         <i class="fa-solid fa-eye"></i>
       </button>
-      <button type="button" class="btn btn-sm btn-outline-warning rounded-3 px-2" data-action="edit" data-id="${variant.id}" title="Editar variante">
+      <button type="button" class="btn btn-sm btn-outline-warning" data-action="edit" data-id="${variant.id}" title="Editar variante" aria-label="Editar variante">
         <i class="fa-solid fa-pen-to-square"></i>
       </button>
-      <button type="button" class="btn btn-sm btn-outline-danger rounded-3 px-2" data-action="delete" data-id="${variant.id}" title="${deleteTitle}" ${disabledDelete ? "disabled" : ""}>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${variant.id}" title="${deleteTitle}" aria-label="${deleteTitle}" ${disabledDelete ? "disabled" : ""}>
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -997,3 +997,6 @@ onBeforeUnmount(() => {
   word-break: break-word;
 }
 </style>
+
+
+

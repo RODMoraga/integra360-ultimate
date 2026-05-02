@@ -120,26 +120,26 @@
                       </td>
                       <td class="small text-secondary">{{ formatDate(city.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
                           <button
-                            class="btn btn-sm btn-outline-info rounded-3 px-2"
+                            class="btn btn-sm btn-outline-info"
                             @click="openViewModal(city)"
-                            title="Ver detalle"
+                            title="Ver detalle" aria-label="Ver detalle"
                           >
                             <i class="fa-solid fa-eye"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-warning rounded-3 px-2"
+                            class="btn btn-sm btn-outline-warning"
                             @click="openEditModal(city)"
-                            title="Editar ciudad"
+                            title="Editar ciudad" aria-label="Editar ciudad"
                           >
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(city)"
                             :disabled="city.communes_count > 0"
-                            :title="city.communes_count > 0 ? `No se puede eliminar: tiene ${city.communes_count} comuna(s) asociada(s)` : 'Eliminar ciudad'"
+                            :title="city.communes_count > 0 ? `No se puede eliminar: tiene ${city.communes_count} comuna(s) asociada(s)` : 'Eliminar ciudad'" :aria-label="city.communes_count > 0 ? `No se puede eliminar: tiene ${city.communes_count} comuna(s) asociada(s)` : 'Eliminar ciudad'"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -698,3 +698,7 @@ async function confirmDelete(city: CityItem) {
   padding: 0;
 }
 </style>
+
+
+
+

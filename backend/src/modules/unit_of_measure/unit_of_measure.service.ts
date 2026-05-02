@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/app-error";
 import { toUtcIsoString } from "../../common/utils/datetime";
 import { logger } from "../../config/logger";
@@ -62,7 +61,7 @@ class UnitOfMeasureService {
       logger.info({ id: row.id.toString(), is_base_unit: dto.is_base_unit }, "UnitOfMeasure created");
       return this.serialize(row);
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      if ((err as { code?: string })?.code === "P2002") {
         logger.error({ companyId: companyId.toString(), unit_type: dto.unit_type }, "create: DB unique constraint violation on is_base_unit");
         throw new AppError(
           `Ya existe una unidad base activa para el tipo "${dto.unit_type}". Desmarque esa unidad base antes de asignar otra.`,
@@ -107,7 +106,7 @@ class UnitOfMeasureService {
       );
       return this.serialize(updated);
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      if ((err as { code?: string })?.code === "P2002") {
         logger.error({ companyId: companyId.toString(), id: id.toString(), unit_type: targetUnitType }, "update: DB unique constraint violation on is_base_unit");
         throw new AppError(
           `Ya existe una unidad base activa para el tipo "${targetUnitType}". Desmarque esa unidad base antes de asignar otra.`,

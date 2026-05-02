@@ -396,14 +396,14 @@ const formatDimensions = (width: number | null, height: number | null) => {
 };
 
 const buildActionButtons = (item: ProductImageItem) => `
-  <div class="d-flex gap-1 justify-content-center">
-    <button type="button" class="btn btn-sm btn-outline-info rounded-3 px-2" data-action="view" data-id="${item.id}" title="Ver detalle">
+  <div class="btn-group" role="group" aria-label="Acciones de fila">
+    <button type="button" class="btn btn-sm btn-outline-info" data-action="view" data-id="${item.id}" title="Ver detalle" aria-label="Ver detalle">
       <i class="fa-solid fa-eye"></i>
     </button>
-    <button type="button" class="btn btn-sm btn-outline-warning rounded-3 px-2" data-action="edit" data-id="${item.id}" title="Editar imagen">
+    <button type="button" class="btn btn-sm btn-outline-warning" data-action="edit" data-id="${item.id}" title="Editar imagen" aria-label="Editar imagen">
       <i class="fa-solid fa-pen-to-square"></i>
     </button>
-    <button type="button" class="btn btn-sm btn-outline-danger rounded-3 px-2" data-action="delete" data-id="${item.id}" title="Eliminar imagen">
+    <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${item.id}" title="Eliminar imagen" aria-label="Eliminar imagen">
       <i class="fa-solid fa-trash"></i>
     </button>
   </div>
@@ -742,3 +742,6 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+
+

@@ -99,18 +99,18 @@
                       </td>
                       <td class="small text-secondary">{{ formatDate(commune.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
-                          <button class="btn btn-sm btn-outline-info rounded-3 px-2" @click="openViewModal(commune)" title="Ver detalle">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
+                          <button class="btn btn-sm btn-outline-info" @click="openViewModal(commune)" title="Ver detalle" aria-label="Ver detalle">
                             <i class="fa-solid fa-eye"></i>
                           </button>
-                          <button class="btn btn-sm btn-outline-warning rounded-3 px-2" @click="openEditModal(commune)" title="Editar comuna">
+                          <button class="btn btn-sm btn-outline-warning" @click="openEditModal(commune)" title="Editar comuna" aria-label="Editar comuna">
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(commune)"
                             :disabled="commune.dependencies_count > 0"
-                            :title="commune.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar comuna'"
+                            :title="commune.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar comuna'" :aria-label="commune.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar comuna'"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -572,3 +572,7 @@ async function confirmDelete(commune: CommuneItem) {
   padding: 0;
 }
 </style>
+
+
+
+

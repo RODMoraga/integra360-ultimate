@@ -271,14 +271,14 @@ const buildActionButtons = (permission: PermissionItem) => {
   const deleteTitle = disabledDelete ? "No se puede eliminar: asignado a roles" : "Eliminar permiso";
 
   return `
-    <div class="d-flex gap-1 justify-content-center">
-      <button type="button" class="btn btn-sm btn-outline-info rounded-3 px-2" data-action="view" data-id="${permission.id}" title="Ver detalle">
+    <div class="btn-group" role="group" aria-label="Acciones de fila">
+      <button type="button" class="btn btn-sm btn-outline-info" data-action="view" data-id="${permission.id}" title="Ver detalle" aria-label="Ver detalle">
         <i class="fa-solid fa-eye"></i>
       </button>
-      <button type="button" class="btn btn-sm btn-outline-warning rounded-3 px-2" data-action="edit" data-id="${permission.id}" title="Editar permiso">
+      <button type="button" class="btn btn-sm btn-outline-warning" data-action="edit" data-id="${permission.id}" title="Editar permiso" aria-label="Editar permiso">
         <i class="fa-solid fa-pen-to-square"></i>
       </button>
-      <button type="button" class="btn btn-sm btn-outline-danger rounded-3 px-2" data-action="delete" data-id="${permission.id}" title="${deleteTitle}" ${disabledDelete ? "disabled" : ""}>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${permission.id}" title="${deleteTitle}" aria-label="${deleteTitle}" ${disabledDelete ? "disabled" : ""}>
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
@@ -588,3 +588,6 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+
+

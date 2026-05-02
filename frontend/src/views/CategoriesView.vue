@@ -102,18 +102,18 @@
                       </td>
                       <td class="small text-secondary">{{ formatDate(category.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
-                          <button class="btn btn-sm btn-outline-info rounded-3 px-2" @click="openViewModal(category)" title="Ver detalle">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
+                          <button class="btn btn-sm btn-outline-info" @click="openViewModal(category)" title="Ver detalle" aria-label="Ver detalle">
                             <i class="fa-solid fa-eye"></i>
                           </button>
-                          <button class="btn btn-sm btn-outline-warning rounded-3 px-2" @click="openEditModal(category)" title="Editar categoría">
+                          <button class="btn btn-sm btn-outline-warning" @click="openEditModal(category)" title="Editar categoría" aria-label="Editar categoría">
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(category)"
                             :disabled="category.dependencies_count > 0"
-                            :title="category.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar categoría'"
+                            :title="category.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar categoría'" :aria-label="category.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar categoría'"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -763,3 +763,6 @@ async function confirmDelete(category: CategoryItem) {
   box-shadow: 0 0 0 0.12rem rgba(220, 38, 38, 0.2);
 }
 </style>
+
+
+

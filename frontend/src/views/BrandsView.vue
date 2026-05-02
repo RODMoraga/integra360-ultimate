@@ -94,18 +94,18 @@
                       <td class="small">{{ brand.products_count }}</td>
                       <td class="small text-secondary">{{ formatDate(brand.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
-                          <button class="btn btn-sm btn-outline-info rounded-3 px-2" @click="openViewModal(brand)" title="Ver detalle">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
+                          <button class="btn btn-sm btn-outline-info" @click="openViewModal(brand)" title="Ver detalle" aria-label="Ver detalle">
                             <i class="fa-solid fa-eye"></i>
                           </button>
-                          <button class="btn btn-sm btn-outline-warning rounded-3 px-2" @click="openEditModal(brand)" title="Editar marca">
+                          <button class="btn btn-sm btn-outline-warning" @click="openEditModal(brand)" title="Editar marca" aria-label="Editar marca">
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(brand)"
                             :disabled="brand.dependencies_count > 0"
-                            :title="brand.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar marca'"
+                            :title="brand.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar marca'" :aria-label="brand.dependencies_count > 0 ? 'No se puede eliminar: tiene dependencias' : 'Eliminar marca'"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -617,3 +617,7 @@ async function confirmDelete(brand: BrandItem) {
   border-color: #dc3545 !important;
 }
 </style>
+
+
+
+

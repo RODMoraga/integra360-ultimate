@@ -853,10 +853,10 @@ const tableColumns = [
     orderable: false,
     searchable: false,
     render: (_: unknown, __: unknown, row: { id: string }) => `
-      <div class="d-flex gap-2">
-        <button class="btn btn-sm btn-outline-info" data-action="view" data-id="${row.id}"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn btn-sm btn-outline-warning" data-action="edit" data-id="${row.id}"><i class="fa-solid fa-pen-to-square"></i></button>
-        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${row.id}"><i class="fa-solid fa-trash"></i></button>
+      <div class="btn-group" role="group" aria-label="Acciones de fila">
+        <button type="button" class="btn btn-sm btn-outline-info" data-action="view" data-id="${row.id}" title="Ver detalle" aria-label="Ver detalle"><i class="fa-solid fa-eye"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-warning" data-action="edit" data-id="${row.id}" title="Editar documento" aria-label="Editar documento"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${row.id}" title="Eliminar documento" aria-label="Eliminar documento"><i class="fa-solid fa-trash"></i></button>
       </div>
     `
   }
@@ -960,3 +960,4 @@ onBeforeUnmount(() => {
   vertical-align: middle;
 }
 </style>
+

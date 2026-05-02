@@ -37,3 +37,4 @@ import DashFooter from "../components/dashboard/DashFooter.vue";
  */
 const sidebarOpen = ref(false);
 </script>
+

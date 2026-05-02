@@ -89,7 +89,7 @@
                       <td class="text-secondary small">{{ role.id }}</td>
                       <td><span class="badge bg-secondary-subtle text-secondary fw-semibold">{{ role.code }}</span></td>
                       <td class="fw-semibold">{{ role.name }}</td>
-                      <td class="small" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="role.description ?? ''">
+                      <td class="small" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="role.description ?? ''" :aria-label="role.description ?? ''">
                         {{ role.description ?? '—' }}
                       </td>
                       <td class="small">{{ role.permission_codes.length ? role.permission_codes.join(', ') : 'Sin permisos' }}</td>
@@ -101,23 +101,24 @@
                       </td>
                       <td class="small text-secondary">{{ formatDate(role.created_at) }}</td>
                       <td class="text-center" style="white-space:nowrap;">
-                        <div class="d-flex gap-1 justify-content-center">
-                          <button class="btn btn-sm btn-outline-info rounded-3 px-2" @click="openViewModal(role)" title="Ver detalle">
+                        <div class="btn-group" role="group" aria-label="Acciones de fila">
+                          <button class="btn btn-sm btn-outline-info" @click="openViewModal(role)" title="Ver detalle" aria-label="Ver detalle">
                             <i class="fa-solid fa-eye"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-warning rounded-3 px-2"
+                            class="btn btn-sm btn-outline-warning"
                             @click="openEditModal(role)"
                             :disabled="role.is_system"
-                            title="Editar rol"
+                            title="Editar rol" aria-label="Editar rol"
                           >
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                           <button
-                            class="btn btn-sm btn-outline-danger rounded-3 px-2"
+                            class="btn btn-sm btn-outline-danger"
                             @click="confirmDelete(role)"
                             :disabled="role.is_system || role.users_count > 0"
                             title="Eliminar rol"
+                            aria-label="Eliminar rol"
                           >
                             <i class="fa-solid fa-trash"></i>
                           </button>
@@ -321,7 +322,7 @@
                   v-for="permission in flatPermissions"
                   :key="permission.id"
                   class="badge bg-secondary-subtle text-secondary border"
-                  :title="`${permission.module_name} · ${permission.name}`"
+                  :title="`${permission.module_name} · ${permission.name}`" :aria-label="`${permission.module_name} · ${permission.name}`"
                 >
                   {{ permission.module_name }} · {{ permission.code }}
                 </span>
@@ -791,3 +792,7 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+
+
+
