@@ -26,7 +26,11 @@
     "smoke:cash-registers:run": "node scripts/smoke-test-cash-registers.mjs",
     "smoke:cash-registers": "npm run prisma:seed:cash-registers && npm run smoke:cash-registers:run",
     "smoke:inventory:run": "node scripts/smoke-test-inventory.mjs",
-    "smoke:inventory": "npm run prisma:seed:inventory && npm run smoke:inventory:run"
+    "smoke:inventory": "npm run prisma:seed:inventory && npm run smoke:inventory:run",
+    "smoke:sales:run": "node scripts/smoke-test-sales.mjs",
+    "smoke:sales": "npm run prisma:seed:document-sequences && npm run smoke:sales:run",
+    "smoke:all:run": "node scripts/smoke-test-all.mjs",
+    "smoke:all": "npm run smoke:all:run"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

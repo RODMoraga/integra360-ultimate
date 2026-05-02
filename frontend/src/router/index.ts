@@ -118,6 +118,36 @@ export const router = createRouter({
       }
     },
     {
+      path: "/ventas/historial",
+      name: "ventas-historial",
+      component: () => import("../views/SalesView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Ventas - Integra360"
+      }
+    },
+    {
+      path: "/ventas/nueva",
+      name: "ventas-nueva",
+      component: () => import("../views/SalesView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Nueva Venta - Integra360"
+      }
+    },
+    {
+      path: "/ventas/devoluciones",
+      name: "ventas-devoluciones",
+      component: () => import("../views/SalesReturnsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Devoluciones - Integra360"
+      }
+    },
+    {
       path: "/documentos",
       name: "documentos",
       component: () => import("../views/DocumentsView.vue"),

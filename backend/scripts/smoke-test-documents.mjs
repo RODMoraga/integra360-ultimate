@@ -1,317 +1,400 @@
 /**
- * Documents Module — E2E Smoke Test
+ * Documents Module - E2E Smoke Test
+ *
+ * Coverage:
+ * - CRUD (create, read, update, delete)
+ * - Basic list and filtered list checks
+ * - Detail validation (invalid quantity)
  *
  * Usage:
  *   node scripts/smoke-test-documents.mjs
  *   node scripts/smoke-test-documents.mjs http://localhost:3000/api
- *
- * Or via npm:
- *   npm run smoke:documents --workspace=backend
  */
 
 const BASE_URL = process.argv[2] ?? "http://localhost:3000/api";
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 let passed = 0;
 let failed = 0;
 
 function ok(label, detail = "") {
-  console.log(`  ✅ PASS  ${label}${detail ? `  (${detail})` : ""}`);
+  console.log(`  [PASS] ${label}${detail ? ` (${detail})` : ""}`);
   passed++;
 }
 
 function fail(label, detail = "") {
-  console.error(`  ❌ FAIL  ${label}${detail ? `  → ${detail}` : ""}`);
+  console.error(`  [FAIL] ${label}${detail ? ` -> ${detail}` : ""}`);
   failed++;
+}
+
+function normalizeList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
 }
 
 async function request(method, path, body, token) {
   const headers = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? JSON.stringify(body) : undefined
   });
 
   let json = null;
   try {
     json = await res.json();
   } catch {
-    // non-JSON response
+    // ignore non-JSON
   }
+
   return { status: res.status, json };
 }
-
-// ─── Seed lookups (match documents.seed.sql) ────────────────────────────────
 
 const TEST_EMAIL = `smoke_docs_${Date.now()}@integra360.test`;
 const TEST_PASSWORD = "SmokeTest1!";
 const COMPANY_ID = 2;
 
-// ─── Steps ──────────────────────────────────────────────────────────────────
-
 async function step1_healthCheck() {
   console.log("\n[1] Health check");
   const { status } = await request("GET", "/health");
-  status === 200 ? ok("GET /health → 200") : fail("GET /health", `got ${status}`);
+  status === 200 ? ok("GET /health") : fail("GET /health", `got ${status}`);
 }
 
-async function step2_register() {
-  console.log("\n[2] Register test user");
-  const { status, json } = await request("POST", "/auth/register", {
-    name: "Smoke Test User",
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
-    company_id: COMPANY_ID,
-  });
-  if (status === 201 || status === 200) {
-    ok("POST /auth/register → 201/200");
-    return true;
-  }
-  fail("POST /auth/register", json?.message ?? `status ${status}`);
-  return false;
-}
+async function step2_registerAndLogin() {
+  console.log("\n[2] Register and login");
 
-async function step3_login() {
-  console.log("\n[3] Login");
-  const { status, json } = await request("POST", "/auth/login", {
+  const registerRes = await request("POST", "/auth/register", {
+    fullName: "Smoke Documents User",
     email: TEST_EMAIL,
     password: TEST_PASSWORD,
+    companyId: COMPANY_ID
   });
-  if ((status === 200 || status === 201) && json?.token) {
-    ok("POST /auth/login → token received");
-    return json.token;
+
+  if (registerRes.status !== 201 && registerRes.status !== 200) {
+    fail("POST /auth/register", registerRes.json?.message ?? `status ${registerRes.status}`);
+    return null;
   }
-  fail("POST /auth/login", json?.message ?? `status ${status}`);
+  ok("POST /auth/register");
+
+  const loginRes = await request("POST", "/auth/login", {
+    email: TEST_EMAIL,
+    password: TEST_PASSWORD,
+    companyId: COMPANY_ID
+  });
+
+  if ((loginRes.status === 200 || loginRes.status === 201) && loginRes.json?.accessToken) {
+    ok("POST /auth/login", "access token received");
+    return loginRes.json.accessToken;
+  }
+
+  fail("POST /auth/login", loginRes.json?.message ?? `status ${loginRes.status}`);
   return null;
 }
 
-async function step4_listDocuments(token) {
-  console.log("\n[4] List documents (seed data)");
-  const { status, json } = await request("GET", "/documents", null, token);
-  if (status === 200 && Array.isArray(json?.data ?? json)) {
-    const count = (json?.data ?? json).length;
-    ok(`GET /documents → 200`, `${count} record(s)`);
-  } else {
-    fail("GET /documents", `status ${status} — ${json?.message ?? ""}`);
-  }
-}
+async function step3_lookupRequiredIds(token) {
+  console.log("\n[3] Lookup required IDs");
 
-async function step5_lookupIds(token) {
-  console.log("\n[5] Lookup required IDs for create");
+  const [typesRes, seqRes, customersRes, suppliersRes, warehousesRes, variantsRes] = await Promise.all([
+    request("GET", "/document-types", null, token),
+    request("GET", "/document-sequences", null, token),
+    request("GET", "/customers", null, token),
+    request("GET", "/suppliers", null, token),
+    request("GET", "/warehouses", null, token),
+    request("GET", "/product-variants", null, token)
+  ]);
 
-  // Document type
-  const { status: dtStatus, json: dtJson } = await request("GET", "/document-types", null, token);
-  const docType = (dtJson?.data ?? dtJson ?? []).find(
-    (d) => d.code === "DEMO_FACTURA" || d.type_name?.includes("DEMO")
-  );
-  if (!docType) {
-    fail("GET /document-types — DEMO_FACTURA not found");
+  if (typesRes.status !== 200 || seqRes.status !== 200) {
+    fail("Document catalogs", `types=${typesRes.status}, sequences=${seqRes.status}`);
     return null;
   }
-  ok("GET /document-types", `DEMO_FACTURA id=${docType.id}`);
 
-  // Warehouse
-  const { json: whJson } = await request("GET", "/warehouses", null, token);
-  const warehouse = (whJson?.data ?? whJson ?? []).find((w) => w.code === "DEMO-DOC-WH");
-  if (!warehouse) {
-    fail("GET /warehouses — DEMO-DOC-WH not found");
+  const types = normalizeList(typesRes.json);
+  const sequences = normalizeList(seqRes.json);
+  const customers = normalizeList(customersRes.json).filter((c) => c.is_active !== false);
+  const suppliers = normalizeList(suppliersRes.json).filter((s) => s.is_active !== false);
+  const warehouses = normalizeList(warehousesRes.json).filter((w) => w.is_active !== false);
+  const variants = normalizeList(variantsRes.json).filter((v) => v.is_active !== false);
+
+  if (warehouses.length === 0 || variants.length === 0) {
+    fail("Warehouse/variant lookup", "missing active data for smoke test");
     return null;
   }
-  ok("GET /warehouses", `DEMO-DOC-WH id=${warehouse.id}`);
 
-  // Customer
-  const { json: custJson } = await request("GET", "/customers", null, token);
-  const customer = (custJson?.data ?? custJson ?? []).find(
-    (c) => c.tax_id === "11111111-1" || c.business_name?.includes("DEMO-DOC")
-  );
-  if (!customer) {
-    fail("GET /customers — DEMO-DOC customer not found");
+  const year = new Date().getUTCFullYear();
+  const typesById = new Map(types.map((t) => [String(t.id), t]));
+  const candidateSequences = sequences.filter((s) => Number(s.year_num) === year);
+
+  if (candidateSequences.length === 0) {
+    fail("Document sequence lookup", `no sequences for year ${year}`);
     return null;
   }
-  ok("GET /customers", `id=${customer.id}`);
 
-  // Product variant
-  const { json: pvJson } = await request("GET", "/product-variants", null, token);
-  const variant = (pvJson?.data ?? pvJson ?? []).find((v) => v.sku === "DEMO-DOC-VAR-001");
-  if (!variant) {
-    fail("GET /product-variants — DEMO-DOC-VAR-001 not found");
+  const withType = candidateSequences
+    .map((seq) => ({ seq, type: typesById.get(String(seq.document_type_id)) }))
+    .filter((row) => Boolean(row.type));
+
+  const preferred = withType.find((row) => row.type.counterpart_scope === "CUSTOMER")
+    ?? withType.find((row) => row.type.counterpart_scope === "SUPPLIER")
+    ?? withType.find((row) => row.type.counterpart_scope === "NONE");
+
+  if (!preferred) {
+    fail("Document type resolution", "no valid type for existing sequence");
     return null;
   }
-  ok("GET /product-variants", `DEMO-DOC-VAR-001 id=${variant.id}`);
+
+  if (preferred.type.counterpart_scope === "CUSTOMER" && customers.length === 0) {
+    fail("Customer lookup", "required by selected document type");
+    return null;
+  }
+
+  if (preferred.type.counterpart_scope === "SUPPLIER" && suppliers.length === 0) {
+    fail("Supplier lookup", "required by selected document type");
+    return null;
+  }
+
+  const warehouse = warehouses[0];
+  const variant = variants[0];
+  const customer = customers[0] ?? null;
+  const supplier = suppliers[0] ?? null;
+
+  ok("Document type + sequence", `${preferred.type.code} (${preferred.type.counterpart_scope})`);
+  ok("Warehouse", `${warehouse.code ?? warehouse.id}`);
+  ok("Variant", `${variant.variant_code ?? variant.id}`);
 
   return {
-    documentTypeId: docType.id,
-    warehouseId: warehouse.id,
-    customerId: customer.id,
-    variantId: variant.id,
+    documentType: preferred.type,
+    warehouse,
+    variant,
+    customer,
+    supplier,
+    today: new Date().toISOString().slice(0, 10)
   };
 }
 
-async function step6_createDocument(token, ids) {
-  console.log("\n[6] Create document");
-  const { documentTypeId, warehouseId, customerId, variantId } = ids;
+async function step4_listDocuments(token) {
+  console.log("\n[4] List documents");
+  const { status, json } = await request("GET", "/documents", null, token);
+  const list = normalizeList(json);
 
+  if (status === 200 && Array.isArray(list)) {
+    ok("GET /documents", `${list.length} record(s)`);
+  } else {
+    fail("GET /documents", `status ${status}`);
+  }
+}
+
+function createDocumentPayload(ctx) {
   const payload = {
-    document_type_id: documentTypeId,
-    issue_date: new Date().toISOString().slice(0, 10),
+    document_type_id: Number(ctx.documentType.id),
+    document_date: ctx.today,
+    warehouse_id: Number(ctx.warehouse.id),
     status: "DRAFT",
-    counterpart_scope: "CUSTOMER",
-    counterpart_id: customerId,
-    warehouse_id: warehouseId,
     notes: "Smoke test document",
     details: [
       {
-        product_variant_id: variantId,
-        warehouse_id: warehouseId,
+        product_variant_id: Number(ctx.variant.id),
+        warehouse_id: Number(ctx.warehouse.id),
         quantity: 2,
-        unit_price: 10000,
-        discount_pct: 0,
-        tax_pct: 19,
-      },
-    ],
+        unit_price: 15000,
+        discount_amount: 1000,
+        tax_amount: 5510
+      }
+    ]
   };
 
-  const { status, json } = await request("POST", "/documents", payload, token);
-  if (status === 201 && json?.id) {
-    ok("POST /documents → 201", `id=${json.id}, number=${json.document_number}`);
-    return json.id;
+  if (ctx.documentType.counterpart_scope === "CUSTOMER" && ctx.customer) {
+    payload.customer_id = Number(ctx.customer.id);
   }
+
+  if (ctx.documentType.counterpart_scope === "SUPPLIER" && ctx.supplier) {
+    payload.supplier_id = Number(ctx.supplier.id);
+  }
+
+  return payload;
+}
+
+async function step5_createDocument(token, ctx) {
+  console.log("\n[5] Create document");
+
+  const { status, json } = await request("POST", "/documents", createDocumentPayload(ctx), token);
+  if (status === 201 && json?.id) {
+    ok("POST /documents", `id=${json.id}, number=${json.document_number_label}`);
+    return json;
+  }
+
   fail("POST /documents", json?.message ?? `status ${status}`);
   return null;
 }
 
-async function step7_getById(token, id) {
-  console.log("\n[7] Get document by ID");
-  const { status, json } = await request("GET", `/documents/${id}`, null, token);
-  if (status === 200 && json?.id == id) {
-    const detailCount = json.details?.length ?? 0;
-    ok(`GET /documents/${id} → 200`, `status=${json.status}, details=${detailCount}`);
+async function step6_getById(token, docId) {
+  console.log("\n[6] Get document by ID");
+  const { status, json } = await request("GET", `/documents/${docId}`, null, token);
+
+  if (status === 200 && String(json?.id) === String(docId)) {
+    const detailCount = Array.isArray(json?.details) ? json.details.length : 0;
+    ok(`GET /documents/${docId}`, `status=${json.status}, details=${detailCount}`);
   } else {
-    fail(`GET /documents/${id}`, json?.message ?? `status ${status}`);
+    fail(`GET /documents/${docId}`, json?.message ?? `status ${status}`);
   }
 }
 
-async function step8_updateDocument(token, id, ids) {
-  console.log("\n[8] Update document (confirm + replace details)");
-  const { warehouseId, variantId } = ids;
+async function step7_filters(token, document, today) {
+  console.log("\n[7] Validate filters");
+
+  const statusRes = await request("GET", "/documents?status=DRAFT", null, token);
+  const statusList = normalizeList(statusRes.json);
+  const inStatusFilter = statusList.some((row) => String(row.id) === String(document.id));
+  inStatusFilter
+    ? ok("GET /documents?status=DRAFT includes created document")
+    : fail("GET /documents?status=DRAFT includes created document", `status=${statusRes.status}`);
+
+  const partnerTerm = (document.partner_name ?? document.customer_name ?? document.supplier_name ?? "")
+    .split(" ")[0]
+    ?.trim() || "";
+
+  const partnerRes = await request("GET", `/documents?partner_name=${encodeURIComponent(partnerTerm)}`, null, token);
+  const partnerList = normalizeList(partnerRes.json);
+  const inPartnerFilter = partnerList.some((row) => String(row.id) === String(document.id));
+  inPartnerFilter
+    ? ok("GET /documents?partner_name=... includes created document")
+    : fail("GET /documents?partner_name=... includes created document", `status=${partnerRes.status}`);
+
+  const dateRes = await request("GET", `/documents?date_from=${today}&date_to=${today}`, null, token);
+  const dateList = normalizeList(dateRes.json);
+  const inDateFilter = dateList.some((row) => String(row.id) === String(document.id));
+  inDateFilter
+    ? ok("GET /documents date range includes created document")
+    : fail("GET /documents date range includes created document", `status=${dateRes.status}`);
+}
+
+async function step8_detailValidation(token, ctx) {
+  console.log("\n[8] Validate detail payload errors");
+
+  const invalidPayload = createDocumentPayload(ctx);
+  invalidPayload.details[0].quantity = 0;
+
+  const { status, json } = await request("POST", "/documents", invalidPayload, token);
+
+  if (status === 400) {
+    ok("POST /documents invalid detail returns 400");
+  } else {
+    fail("POST /documents invalid detail", json?.message ?? `expected 400, got ${status}`);
+  }
+}
+
+async function step9_updateDocument(token, docId, ctx) {
+  console.log("\n[9] Update document");
 
   const payload = {
     status: "CONFIRMED",
-    notes: "Smoke test — confirmed",
+    notes: "Smoke test document confirmed",
     details: [
       {
-        product_variant_id: variantId,
-        warehouse_id: warehouseId,
-        quantity: 5,
-        unit_price: 15000,
-        discount_pct: 10,
-        tax_pct: 19,
-      },
-    ],
+        product_variant_id: Number(ctx.variant.id),
+        warehouse_id: Number(ctx.warehouse.id),
+        quantity: 3,
+        unit_price: 12000,
+        discount_amount: 500,
+        tax_amount: 6745
+      }
+    ]
   };
 
-  const { status, json } = await request("PUT", `/documents/${id}`, payload, token);
+  const { status, json } = await request("PUT", `/documents/${docId}`, payload, token);
   if (status === 200 && json?.status === "CONFIRMED") {
-    ok(`PUT /documents/${id} → 200`, `status=CONFIRMED, total=${json.total_amount}`);
+    ok(`PUT /documents/${docId}`, `total=${json.total}`);
   } else {
-    fail(`PUT /documents/${id}`, json?.message ?? `status ${status}`);
+    fail(`PUT /documents/${docId}`, json?.message ?? `status ${status}`);
   }
 }
 
-async function step9_deleteDocument(token, id) {
-  console.log("\n[9] Delete (soft-delete) document");
-  const { status } = await request("DELETE", `/documents/${id}`, null, token);
+async function step10_deleteDocument(token, docId) {
+  console.log("\n[10] Delete document");
+  const { status } = await request("DELETE", `/documents/${docId}`, null, token);
+
   if (status === 204 || status === 200) {
-    ok(`DELETE /documents/${id} → ${status}`);
+    ok(`DELETE /documents/${docId}`);
   } else {
-    fail(`DELETE /documents/${id}`, `status ${status}`);
+    fail(`DELETE /documents/${docId}`, `status ${status}`);
   }
 }
 
-async function step10_verifyDeleted(token, id) {
-  console.log("\n[10] Verify document is gone after delete");
+async function step11_verifyDeleted(token, docId) {
+  console.log("\n[11] Verify deleted document");
 
-  // Should not appear in list
-  const { status: listStatus, json: listJson } = await request("GET", "/documents", null, token);
-  const list = listJson?.data ?? listJson ?? [];
-  const stillInList = list.some((d) => String(d.id) === String(id));
+  const listRes = await request("GET", "/documents", null, token);
+  const list = normalizeList(listRes.json);
+  const stillInList = list.some((row) => String(row.id) === String(docId));
+
   stillInList
-    ? fail("Document still visible in list after delete")
-    : ok("Document absent from list after delete");
+    ? fail("Deleted document absent from list", "still visible")
+    : ok("Deleted document absent from list");
 
-  // Should return 404 on getById
-  const { status: getStatus } = await request("GET", `/documents/${id}`, null, token);
-  getStatus === 404
-    ? ok(`GET /documents/${id} → 404 (expected)`)
-    : fail(`GET /documents/${id}`, `expected 404, got ${getStatus}`);
+  const getRes = await request("GET", `/documents/${docId}`, null, token);
+  if (getRes.status === 404) {
+    ok(`GET /documents/${docId} after delete`, "404 expected");
+  } else {
+    fail(`GET /documents/${docId} after delete`, `expected 404, got ${getRes.status}`);
+  }
 }
 
-// ─── Runner ─────────────────────────────────────────────────────────────────
+function printSummary() {
+  const total = passed + failed;
+  console.log("\n==============================================");
+  console.log(`Documents smoke: ${passed}/${total} passed`);
+  if (failed > 0) {
+    console.error(`Failed checks: ${failed}`);
+    process.exitCode = 1;
+  } else {
+    console.log("All checks passed");
+  }
+  console.log("==============================================\n");
+}
 
 async function run() {
-  console.log("═══════════════════════════════════════════════");
-  console.log("  Documents Module — E2E Smoke Test");
-  console.log(`  Target: ${BASE_URL}`);
-  console.log("═══════════════════════════════════════════════");
+  console.log("==============================================");
+  console.log("Documents Module - E2E Smoke Test");
+  console.log(`Target: ${BASE_URL}`);
+  console.log("==============================================");
 
   await step1_healthCheck();
 
-  const registered = await step2_register();
-  if (!registered) {
-    console.log("\n⚠️  Skipping remaining steps — registration failed.");
+  const token = await step2_registerAndLogin();
+  if (!token) {
+    console.log("\nSkipping remaining steps due to authentication failure.");
     printSummary();
     return;
   }
 
-  const token = await step3_login();
-  if (!token) {
-    console.log("\n⚠️  Skipping remaining steps — login failed.");
+  const ctx = await step3_lookupRequiredIds(token);
+  if (!ctx) {
+    console.log("\nSkipping remaining steps due to missing seed/reference data.");
     printSummary();
     return;
   }
 
   await step4_listDocuments(token);
 
-  const ids = await step5_lookupIds(token);
-  if (!ids) {
-    console.log("\n⚠️  Skipping create/update/delete — seed IDs not found.");
+  const document = await step5_createDocument(token, ctx);
+  if (!document?.id) {
+    console.log("\nSkipping remaining CRUD steps due to create failure.");
     printSummary();
     return;
   }
 
-  const docId = await step6_createDocument(token, ids);
-  if (!docId) {
-    console.log("\n⚠️  Skipping update/delete — create failed.");
-    printSummary();
-    return;
-  }
-
-  await step7_getById(token, docId);
-  await step8_updateDocument(token, docId, ids);
-  await step9_deleteDocument(token, docId);
-  await step10_verifyDeleted(token, docId);
+  await step6_getById(token, document.id);
+  await step7_filters(token, document, ctx.today);
+  await step8_detailValidation(token, ctx);
+  await step9_updateDocument(token, document.id, ctx);
+  await step10_deleteDocument(token, document.id);
+  await step11_verifyDeleted(token, document.id);
 
   printSummary();
 }
 
-function printSummary() {
-  const total = passed + failed;
-  console.log("\n═══════════════════════════════════════════════");
-  console.log(`  Results: ${passed}/${total} passed`);
-  if (failed > 0) {
-    console.error(`  ❌ ${failed} test(s) failed`);
-    process.exitCode = 1;
-  } else {
-    console.log("  ✅ All tests passed");
-  }
-  console.log("═══════════════════════════════════════════════\n");
-}
-
 run().catch((err) => {
-  console.error("\nUnhandled error:", err.message);
+  console.error("Unhandled error:", err?.message ?? err);
   process.exitCode = 1;
 });
