@@ -899,20 +899,4 @@ async function confirmDelete(company: CompanyItem) {
 .company-form-grid :deep(select) {
   max-width: 100%;
 }
-
-/* Custom scrollbar inside tab content */
-.tab-content::-webkit-scrollbar {
-  width: 5px;
-}
-.tab-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-.tab-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 10px;
-}
-.tab-content::-webkit-scrollbar-thumb:hover {
-  background: #999;
-}
 </style>

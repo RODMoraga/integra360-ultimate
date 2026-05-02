@@ -806,18 +806,4 @@ async function confirmDelete(subcategory: SubcategoryItem) {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 0.12rem rgba(220, 38, 38, 0.2);
 }
-
-.subcategory-form-tab-content::-webkit-scrollbar {
-  width: 5px;
-}
-
-.subcategory-form-tab-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.subcategory-form-tab-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
 </style>

@@ -254,60 +254,55 @@
             <!-- Quantity fields -->
             <div class="col-md-4">
               <label class="block text-sm font-medium text-ink-black-700 mb-2">En Stock <span class="text-danger">*</span></label>
-              <input
-                v-model.number="form.quantity_on_hand"
-                type="number"
-                min="0"
-                step="0.0001"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white"
+              <NumberStepper
+                v-model="form.quantity_on_hand"
+                :min="0"
+                :step="0.0001"
+                input-class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white number-stepper-input"
                 placeholder="0.0000"
               />
             </div>
 
             <div class="col-md-4">
               <label class="block text-sm font-medium text-ink-black-700 mb-2">Reservado</label>
-              <input
-                v-model.number="form.quantity_reserved"
-                type="number"
-                min="0"
-                step="0.0001"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white"
+              <NumberStepper
+                v-model="form.quantity_reserved"
+                :min="0"
+                :step="0.0001"
+                input-class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white number-stepper-input"
                 placeholder="0.0000"
               />
             </div>
 
             <div class="col-md-4">
               <label class="block text-sm font-medium text-ink-black-700 mb-2">Mínimo en Stock</label>
-              <input
-                v-model.number="form.min_stock"
-                type="number"
-                min="0"
-                step="0.0001"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white"
+              <NumberStepper
+                v-model="form.min_stock"
+                :min="0"
+                :step="0.0001"
+                input-class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white number-stepper-input"
                 placeholder="0.0000"
               />
             </div>
 
             <div class="col-md-6">
               <label class="block text-sm font-medium text-ink-black-700 mb-2">Stock Máximo</label>
-              <input
+              <NumberStepper
                 v-model="form.max_stock"
-                type="number"
-                min="0"
-                step="0.0001"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white"
+                :min="0"
+                :step="0.0001"
+                input-class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white number-stepper-input"
                 placeholder="Sin límite"
               />
             </div>
 
             <div class="col-md-6">
               <label class="block text-sm font-medium text-ink-black-700 mb-2">Punto de Reorden</label>
-              <input
+              <NumberStepper
                 v-model="form.reorder_point"
-                type="number"
-                min="0"
-                step="0.0001"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white"
+                :min="0"
+                :step="0.0001"
+                input-class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white number-stepper-input"
                 placeholder="Automático"
               />
               <p class="text-secondary" style="font-size:0.75rem;margin-top:4px;">Cuando el stock en mano alcance este valor se marcará como <strong>stock bajo</strong>.</p>
@@ -413,6 +408,7 @@ import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
 import DashFooter from "../components/dashboard/DashFooter.vue";
 import CustomSelect from "../components/CustomSelect.vue";
+import NumberStepper from "../components/NumberStepper.vue";
 import { useInventory, useCreateInventory, useUpdateInventory, useDeleteInventory } from "../composables/useInventory";
 import { useWarehouses } from "../composables/useWarehouses";
 import { useProductVariants } from "../composables/useProductVariants";

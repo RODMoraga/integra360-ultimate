@@ -25,11 +25,12 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 overflow-y-auto py-4 scrollbar-thin">
+    <nav class="app-scrollbar flex-1 overflow-y-auto py-4">
+
+      <!-- ── PRINCIPAL ──────────────────────────────────────────── -->
       <div class="px-3 mb-2">
         <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Principal</p>
 
-        <!-- Dashboard -->
         <SidebarItem
           icon="fa-solid fa-gauge-high"
           label="Dashboard"
@@ -39,6 +40,7 @@
         />
       </div>
 
+      <!-- ── GESTIÓN ─────────────────────────────────────────────── -->
       <div class="px-3 mb-2 mt-4">
         <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Gestión</p>
 
@@ -47,6 +49,18 @@
           <SidebarSubItem label="Nueva Venta" to="/ventas/nueva" @click="$emit('close')" />
           <SidebarSubItem label="Historial" to="/ventas/historial" @click="$emit('close')" />
           <SidebarSubItem label="Devoluciones" to="/ventas/devoluciones" @click="$emit('close')" />
+        </SidebarGroup>
+
+        <!-- Clientes -->
+        <SidebarGroup icon="fa-solid fa-users" label="Clientes" :open="openGroups.clientes" @toggle="toggleGroup('clientes')">
+          <SidebarSubItem label="Lista de Clientes" to="/clientes" @click="$emit('close')" />
+          <SidebarSubItem label="Contactos" to="/clientes/contactos" @click="$emit('close')" />
+        </SidebarGroup>
+
+        <!-- Proveedores -->
+        <SidebarGroup icon="fa-solid fa-truck-field" label="Proveedores" :open="openGroups.proveedores" @toggle="toggleGroup('proveedores')">
+          <SidebarSubItem label="Lista de Proveedores" to="/proveedores" @click="$emit('close')" />
+          <SidebarSubItem label="Contactos" to="/proveedores/contactos" @click="$emit('close')" />
         </SidebarGroup>
 
         <!-- Inventario -->
@@ -61,17 +75,10 @@
           <SidebarSubItem label="Unidades de Medida" to="/inventario/unidades-de-medida" @click="$emit('close')" />
           <SidebarSubItem label="Imágenes Productos" to="/inventario/imagenes-productos" @click="$emit('close')" />
           <SidebarSubItem label="Activos Digitales" to="/inventario/activos-digitales" @click="$emit('close')" />
-          <SidebarSubItem label="Movimientos" to="/inventario/movimientos" @click="$emit('close')" />
-        </SidebarGroup>
-
-        <!-- Clientes -->
-        <SidebarGroup icon="fa-solid fa-users" label="Clientes" :open="openGroups.clientes" @toggle="toggleGroup('clientes')">
-          <SidebarSubItem label="Lista de Clientes" to="/clientes" @click="$emit('close')" />
-          <SidebarSubItem label="Contactos" to="/clientes/contactos" @click="$emit('close')" />
-          <SidebarSubItem label="Segmentos" to="/clientes/segmentos" @click="$emit('close')" />
         </SidebarGroup>
       </div>
 
+      <!-- ── ANÁLISIS ────────────────────────────────────────────── -->
       <div class="px-3 mb-2 mt-4">
         <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Análisis</p>
 
@@ -92,117 +99,36 @@
         />
       </div>
 
+      <!-- ── SISTEMA ──────────────────────────────────────────────── -->
       <div class="px-3 mb-2 mt-4">
         <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-400 px-3 mb-2">Sistema</p>
 
-        <SidebarItem
-          icon="fa-solid fa-building"
-          label="Empresas"
-          to="/empresas"
-          :active="currentPath === '/empresas'"
-          @click="$emit('close')"
-        />
+        <!-- Administración -->
+        <SidebarGroup icon="fa-solid fa-shield-halved" label="Administración" :open="openGroups.administracion" @toggle="toggleGroup('administracion')">
+          <SidebarSubItem label="Empresas" to="/empresas" @click="$emit('close')" />
+          <SidebarSubItem label="Usuarios" to="/users" @click="$emit('close')" />
+          <SidebarSubItem label="Roles" to="/roles" @click="$emit('close')" />
+          <SidebarSubItem label="Permisos" to="/permisos" @click="$emit('close')" />
+        </SidebarGroup>
 
-        <SidebarItem
-          icon="fa-solid fa-users-gear"
-          label="Usuarios"
-          to="/users"
-          :active="currentPath === '/users'"
-          @click="$emit('close')"
-        />
+        <!-- Documentos -->
+        <SidebarGroup icon="fa-solid fa-file-invoice" label="Documentos" :open="openGroups.documentos" @toggle="toggleGroup('documentos')">
+          <SidebarSubItem label="Documentos" to="/documentos" @click="$emit('close')" />
+          <SidebarSubItem label="Tipos de Documento" to="/documentos/tipos" @click="$emit('close')" />
+          <SidebarSubItem label="Secuencias" to="/documentos/secuencias" @click="$emit('close')" />
+        </SidebarGroup>
 
-        <SidebarItem
-          icon="fa-solid fa-shield-halved"
-          label="Roles"
-          to="/roles"
-          :active="currentPath === '/roles'"
-          @click="$emit('close')"
-        />
+        <!-- Infraestructura -->
+        <SidebarGroup icon="fa-solid fa-server" label="Infraestructura" :open="openGroups.infraestructura" @toggle="toggleGroup('infraestructura')">
+          <SidebarSubItem label="Bodegas" to="/bodegas" @click="$emit('close')" />
+          <SidebarSubItem label="Terminales POS" to="/terminales-pos" @click="$emit('close')" />
+        </SidebarGroup>
 
-        <SidebarItem
-          icon="fa-solid fa-key"
-          label="Permisos"
-          to="/permisos"
-          :active="currentPath === '/permisos'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-file-invoice"
-          label="Documentos"
-          to="/documentos"
-          :active="currentPath === '/documentos'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-file-lines"
-          label="Tipos Documentos"
-          to="/documentos/tipos"
-          :active="currentPath === '/documentos/tipos'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-hashtag"
-          label="Secuencias Documentos"
-          to="/documentos/secuencias"
-          :active="currentPath === '/documentos/secuencias'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-map"
-          label="Regiones"
-          to="/regiones"
-          :active="currentPath === '/regiones'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-city"
-          label="Ciudades"
-          to="/ciudades"
-          :active="currentPath === '/ciudades'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-map-location-dot"
-          label="Comunas"
-          to="/comunas"
-          :active="currentPath === '/comunas'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-warehouse"
-          label="Bodegas"
-          to="/bodegas"
-          :active="currentPath === '/bodegas'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-cash-register"
-          label="Terminales POS"
-          to="/terminales-pos"
-          :active="currentPath === '/terminales-pos'"
-          @click="$emit('close')"
-        />
-
-        <SidebarItem
-          icon="fa-solid fa-user-group"
-          label="Clientes"
-          to="/clientes"
-          :active="currentPath === '/clientes'"
-          @click="$emit('close')"
-        />
-
-        <!-- Proveedores -->
-        <SidebarGroup icon="fa-solid fa-truck-field" label="Proveedores" :open="openGroups.proveedores" @toggle="toggleGroup('proveedores')">
-          <SidebarSubItem label="Lista de Proveedores" to="/proveedores" @click="$emit('close')" />
-          <SidebarSubItem label="Contactos" to="/proveedores/contactos" @click="$emit('close')" />
+        <!-- Ubicaciones -->
+        <SidebarGroup icon="fa-solid fa-map-location-dot" label="Ubicaciones" :open="openGroups.ubicaciones" @toggle="toggleGroup('ubicaciones')">
+          <SidebarSubItem label="Regiones" to="/regiones" @click="$emit('close')" />
+          <SidebarSubItem label="Ciudades" to="/ciudades" @click="$emit('close')" />
+          <SidebarSubItem label="Comunas" to="/comunas" @click="$emit('close')" />
         </SidebarGroup>
 
         <SidebarItem
@@ -266,9 +192,13 @@ const userRole = computed(() => sessionStore.user?.role ?? "Administrador");
 
 const openGroups = reactive({
   ventas: false,
-  inventario: false,
   clientes: false,
-  proveedores: false
+  proveedores: false,
+  inventario: false,
+  administracion: false,
+  documentos: false,
+  infraestructura: false,
+  ubicaciones: false,
 });
 
 /**

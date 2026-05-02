@@ -267,39 +267,43 @@
                       />
                     </td>
                     <td>
-                      <input
-                        v-model.number="line.quantity"
-                        type="number"
-                        min="0.0001"
-                        step="0.0001"
-                        class="form-control form-control-sm"
+                      <NumberStepper
+                        v-model="line.quantity"
+                        :min="0.0001"
+                        :step="0.0001"
+                        input-class="form-control form-control-sm number-stepper-input"
+                        increment-aria-label="Incrementar cantidad"
+                        decrement-aria-label="Disminuir cantidad"
                       />
                     </td>
                     <td>
-                      <input
-                        v-model.number="line.unit_price"
-                        type="number"
-                        min="0"
-                        step="0.0001"
-                        class="form-control form-control-sm"
+                      <NumberStepper
+                        v-model="line.unit_price"
+                        :min="0"
+                        :step="0.0001"
+                        input-class="form-control form-control-sm number-stepper-input"
+                        increment-aria-label="Incrementar precio unitario"
+                        decrement-aria-label="Disminuir precio unitario"
                       />
                     </td>
                     <td>
-                      <input
-                        v-model.number="line.discount_amount"
-                        type="number"
-                        min="0"
-                        step="0.0001"
-                        class="form-control form-control-sm"
+                      <NumberStepper
+                        v-model="line.discount_amount"
+                        :min="0"
+                        :step="0.0001"
+                        input-class="form-control form-control-sm number-stepper-input"
+                        increment-aria-label="Incrementar descuento"
+                        decrement-aria-label="Disminuir descuento"
                       />
                     </td>
                     <td>
-                      <input
-                        v-model.number="line.tax_amount"
-                        type="number"
-                        min="0"
-                        step="0.0001"
-                        class="form-control form-control-sm"
+                      <NumberStepper
+                        v-model="line.tax_amount"
+                        :min="0"
+                        :step="0.0001"
+                        input-class="form-control form-control-sm number-stepper-input"
+                        increment-aria-label="Incrementar impuesto"
+                        decrement-aria-label="Disminuir impuesto"
                       />
                     </td>
                     <td class="fw-semibold">{{ formatMoney(lineTotal(line)) }}</td>
@@ -418,6 +422,7 @@ import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
 import DashFooter from "../components/dashboard/DashFooter.vue";
 import CustomSelect from "../components/CustomSelect.vue";
+import NumberStepper from "../components/NumberStepper.vue";
 import type { SelectOption } from "../components/CustomSelect.vue";
 import { useCustomers } from "../composables/useCustomers";
 import { useDocumentTypes } from "../composables/useDocumentTypes";

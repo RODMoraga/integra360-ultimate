@@ -69,6 +69,23 @@ export const router = createRouter({
       }
     },
     {
+      path: "/contact",
+      name: "contact",
+      component: () => import("../views/InfoPlaceholderView.vue"),
+      meta: {
+        title: "Contacto - Integra360"
+      }
+    },
+    {
+      path: "/forgot-password",
+      name: "forgot-password",
+      component: () => import("../views/InfoPlaceholderView.vue"),
+      meta: {
+        title: "Recuperar Contraseña - Integra360",
+        hideGlobalChrome: true
+      }
+    },
+    {
       path: "/dashboard",
       name: "dashboard",
       component: loadDashboardView,
@@ -76,6 +93,10 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true
       }
+    },
+    {
+      path: "/ventas",
+      redirect: "/ventas/historial"
     },
     {
       path: "/users",
@@ -145,6 +166,36 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true,
         title: "Devoluciones - Integra360"
+      }
+    },
+    {
+      path: "/reportes",
+      name: "reportes",
+      component: () => import("../views/DashboardPlaceholderView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Reportes - Integra360"
+      }
+    },
+    {
+      path: "/calendario",
+      name: "calendario",
+      component: () => import("../views/DashboardPlaceholderView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Calendario - Integra360"
+      }
+    },
+    {
+      path: "/configuracion",
+      name: "configuracion",
+      component: () => import("../views/DashboardPlaceholderView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Configuración - Integra360"
       }
     },
     {

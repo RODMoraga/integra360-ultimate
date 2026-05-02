@@ -130,11 +130,10 @@
 
             <div class="col-md-4">
               <label class="block text-sm font-medium text-ink-black-700 mb-2">Orden</label>
-              <input
-                v-model.number="form.sort_order"
-                type="number"
-                min="1"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white"
+              <NumberStepper
+                v-model="form.sort_order"
+                :min="1"
+                input-class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-ink-black-500 focus:ring-2 focus:ring-ink-black-200 outline-none transition-all bg-white number-stepper-input"
                 placeholder="Ej: 1"
               />
             </div>
@@ -285,6 +284,7 @@ import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
 import DashFooter from "../components/dashboard/DashFooter.vue";
 import CustomSelect from "../components/CustomSelect.vue";
+import NumberStepper from "../components/NumberStepper.vue";
 import { useProducts } from "../composables/useProducts";
 import {
   useProductImages,

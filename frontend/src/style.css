@@ -12,17 +12,373 @@
 :root {
   color: #0f172a;
   background-color: #f8fafc;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-corporate: "Quicksand", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-family-corporate);
+  --bs-body-font-family: var(--font-family-corporate);
+
+  /* Unified scrollbar palette based on project brand colors. */
+  --scrollbar-size: 10px;
+  --scrollbar-track: rgba(9, 22, 93, 0.08);
+  --scrollbar-thumb: rgba(204, 0, 0, 0.55);
+  --scrollbar-thumb-hover: rgba(153, 0, 0, 0.8);
+  --scrollbar-thumb-active: rgba(102, 0, 0, 0.9);
 }
 
 /* Background atmosphere for public pages and route wrappers. */
 body {
   margin: 0;
   min-height: 100vh;
+  font-family: var(--font-family-corporate);
   background: radial-gradient(circle at top right, #e0f2fe 0%, #f8fafc 45%, #ffffff 100%);
 }
 
 /* Keep SPA root stretching full viewport height. */
 #app {
   min-height: 100vh;
+}
+
+/*
+ * Global scrollbar standardization for all common scroll containers:
+ * app shell, sidebar, modal bodies, DataTables wrappers and custom overflow regions.
+ */
+:where(
+  html,
+  body,
+  #app,
+  .overflow-auto,
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .modal-body,
+  .table-responsive,
+  .dataTables_wrapper,
+  .dataTables_scroll,
+  .dataTables_scrollBody,
+  .app-scrollbar
+) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+:where(
+  html,
+  body,
+  #app,
+  .overflow-auto,
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .modal-body,
+  .table-responsive,
+  .dataTables_wrapper,
+  .dataTables_scroll,
+  .dataTables_scrollBody,
+  .app-scrollbar
+)::-webkit-scrollbar {
+  width: var(--scrollbar-size) !important;
+  height: var(--scrollbar-size) !important;
+}
+
+:where(
+  html,
+  body,
+  #app,
+  .overflow-auto,
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .modal-body,
+  .table-responsive,
+  .dataTables_wrapper,
+  .dataTables_scroll,
+  .dataTables_scrollBody,
+  .app-scrollbar
+)::-webkit-scrollbar-track {
+  background: var(--scrollbar-track) !important;
+  border-radius: 9999px;
+}
+
+:where(
+  html,
+  body,
+  #app,
+  .overflow-auto,
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .modal-body,
+  .table-responsive,
+  .dataTables_wrapper,
+  .dataTables_scroll,
+  .dataTables_scrollBody,
+  .app-scrollbar
+)::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--scrollbar-thumb), rgba(153, 0, 0, 0.72)) !important;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+:where(
+  html,
+  body,
+  #app,
+  .overflow-auto,
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .modal-body,
+  .table-responsive,
+  .dataTables_wrapper,
+  .dataTables_scroll,
+  .dataTables_scrollBody,
+  .app-scrollbar
+)::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover) !important;
+}
+
+:where(
+  html,
+  body,
+  #app,
+  .overflow-auto,
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .modal-body,
+  .table-responsive,
+  .dataTables_wrapper,
+  .dataTables_scroll,
+  .dataTables_scrollBody,
+  .app-scrollbar
+)::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active) !important;
+}
+
+@media (max-width: 1024px), (pointer: coarse) {
+  :root {
+    --scrollbar-size: 8px;
+  }
+}
+
+/*
+ * Number input standardization (field + stepper buttons)
+ * aligned with corporate colors and consistent UX states.
+ */
+:root {
+  --number-input-border: rgba(14, 33, 139, 0.22);
+  --number-input-border-hover: rgba(18, 43, 186, 0.42);
+  --number-input-border-focus: rgba(204, 0, 0, 0.5);
+  --number-input-shadow-focus: 0 0 0 0.2rem rgba(204, 0, 0, 0.16);
+  --number-stepper-bg: linear-gradient(180deg, rgba(9, 22, 93, 0.08), rgba(9, 22, 93, 0.14));
+  --number-stepper-bg-hover: linear-gradient(180deg, rgba(204, 0, 0, 0.16), rgba(153, 0, 0, 0.2));
+  --number-stepper-bg-active: linear-gradient(180deg, rgba(204, 0, 0, 0.24), rgba(102, 0, 0, 0.28));
+}
+
+input[type="number"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: number-input;
+  font-variant-numeric: tabular-nums;
+  border-color: var(--number-input-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+input[type="number"]:hover:not(:disabled):not([readonly]) {
+  border-color: var(--number-input-border-hover);
+}
+
+input[type="number"]:focus,
+input[type="number"]:focus-visible {
+  border-color: var(--number-input-border-focus);
+  box-shadow: var(--number-input-shadow-focus);
+  outline: none;
+}
+
+input[type="number"]:active:not(:disabled):not([readonly]) {
+  border-color: rgba(153, 0, 0, 0.72);
+}
+
+input[type="number"]:disabled,
+input[type="number"][readonly] {
+  background-color: rgba(15, 23, 42, 0.06);
+  cursor: not-allowed;
+}
+
+/* Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+  margin: 0;
+  width: 1.1rem;
+  min-height: 100%;
+  border-left: 1px solid rgba(14, 33, 139, 0.2);
+  background: var(--number-stepper-bg);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+input[type="number"]:hover:not(:disabled):not([readonly])::-webkit-inner-spin-button,
+input[type="number"]:hover:not(:disabled):not([readonly])::-webkit-outer-spin-button {
+  background: var(--number-stepper-bg-hover);
+  border-left-color: rgba(153, 0, 0, 0.35);
+}
+
+input[type="number"]:active:not(:disabled):not([readonly])::-webkit-inner-spin-button,
+input[type="number"]:active:not(:disabled):not([readonly])::-webkit-outer-spin-button {
+  background: var(--number-stepper-bg-active);
+  border-left-color: rgba(102, 0, 0, 0.45);
+}
+
+input[type="number"]:disabled::-webkit-inner-spin-button,
+input[type="number"]:disabled::-webkit-outer-spin-button,
+input[type="number"][readonly]::-webkit-inner-spin-button,
+input[type="number"][readonly]::-webkit-outer-spin-button {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    width: 1.25rem;
+  }
+}
+
+/* Shared custom stepper layout for all numeric form fields. */
+.number-stepper {
+  position: relative;
+  width: 100%;
+  min-width: 92px;
+}
+
+.number-stepper-input {
+  padding-right: 2rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  /* Hide native browser spin buttons — custom stepper controls replace them */
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.number-stepper-input::-webkit-inner-spin-button,
+.number-stepper-input::-webkit-outer-spin-button,
+.number-stepper input[type="number"]::-webkit-inner-spin-button,
+.number-stepper input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  display: none;
+  margin: 0;
+  width: 0;
+  opacity: 0;
+}
+
+.number-stepper-controls {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  width: 1.65rem;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid rgba(14, 33, 139, 0.2);
+  border-radius: 0 0.35rem 0.35rem 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(9, 22, 93, 0.05), rgba(9, 22, 93, 0.12));
+}
+
+.number-stepper-btn {
+  all: unset;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #0e218b;
+  font-size: 0.62rem;
+  line-height: 1;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.number-stepper-btn + .number-stepper-btn {
+  border-top: 1px solid rgba(14, 33, 139, 0.16);
+}
+
+.number-stepper-btn:hover {
+  background-color: rgba(204, 0, 0, 0.14);
+  color: #990000;
+}
+
+.number-stepper-btn:active {
+  background-color: rgba(204, 0, 0, 0.22);
+  color: #660000;
+}
+
+.number-stepper-btn:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(204, 0, 0, 0.35);
+}
+
+.number-stepper-input:disabled + .number-stepper-controls,
+.number-stepper-input[readonly] + .number-stepper-controls {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/*
+ * Corporate table header standardization.
+ * Applies the brand navy (#09165d) background and white text to all <thead>
+ * elements, overriding Bootstrap's table-dark and unstyled variants alike.
+ * A red-accent bottom border ties the header to the secondary brand color.
+ */
+:root {
+  --table-head-bg: #09165d;
+  --table-head-bg-end: #0b1c7a;
+  --table-head-color: #ffffff;
+  --table-head-border: rgba(204, 0, 0, 0.7);
+  --table-head-th-border: rgba(255, 255, 255, 0.12);
+}
+
+.table > thead,
+.table > thead.table-dark {
+  background: linear-gradient(90deg, var(--table-head-bg) 0%, var(--table-head-bg-end) 100%);
+  color: var(--table-head-color);
+  border-bottom: 2px solid var(--table-head-border);
+  /* Override Bootstrap table-dark variables */
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--table-head-color);
+  --bs-table-border-color: var(--table-head-th-border);
+  --bs-table-striped-bg: transparent;
+  --bs-table-active-bg: transparent;
+  --bs-table-hover-bg: transparent;
+}
+
+.table > thead th,
+.table > thead td {
+  color: var(--table-head-color) !important;
+  background-color: transparent !important;
+  border-color: var(--table-head-th-border) !important;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+}
+
+/* Sticky DataTables header keeps corporate style on scroll */
+.dataTables_scrollHead .table > thead,
+.dataTables_scrollHead .table > thead.table-dark {
+  background: linear-gradient(90deg, var(--table-head-bg) 0%, var(--table-head-bg-end) 100%) !important;
+}
+
+.dataTables_scrollHead .table > thead th {
+  color: var(--table-head-color) !important;
+  background-color: transparent !important;
+  border-color: var(--table-head-th-border) !important;
+}
+
+@media (max-width: 768px) {
+  .table > thead th,
+  .table > thead td {
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
 }

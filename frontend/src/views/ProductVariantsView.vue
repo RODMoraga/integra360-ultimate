@@ -198,13 +198,12 @@
 
                 <div class="col-md-6">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="variant-cost">Precio Costo</label>
-                  <input
+                  <NumberStepper
                     id="variant-cost"
-                    v-model.number="form.cost_price"
-                    type="number"
-                    step="0.0001"
-                    min="0"
-                    :class="inputClass(formErrors.cost_price)"
+                    v-model="form.cost_price"
+                    :step="0.0001"
+                    :min="0"
+                    :input-class="`${inputClass(formErrors.cost_price)} number-stepper-input`"
                     placeholder="0.0000"
                     :aria-invalid="Boolean(formErrors.cost_price)"
                     @blur="validateField('cost_price')"
@@ -214,13 +213,12 @@
 
                 <div class="col-md-6">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="variant-sale">Precio Venta</label>
-                  <input
+                  <NumberStepper
                     id="variant-sale"
-                    v-model.number="form.sale_price"
-                    type="number"
-                    step="0.0001"
-                    min="0"
-                    :class="inputClass(formErrors.sale_price)"
+                    v-model="form.sale_price"
+                    :step="0.0001"
+                    :min="0"
+                    :input-class="`${inputClass(formErrors.sale_price)} number-stepper-input`"
                     placeholder="0.0000"
                     :aria-invalid="Boolean(formErrors.sale_price)"
                     @blur="validateField('sale_price')"
@@ -348,6 +346,7 @@ import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
 import DashFooter from "../components/dashboard/DashFooter.vue";
 import CustomSelect from "../components/CustomSelect.vue";
+import NumberStepper from "../components/NumberStepper.vue";
 import {
   useCreateProductVariant,
   useDeleteProductVariant,
@@ -996,23 +995,5 @@ onBeforeUnmount(() => {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-.variant-form-tab-content::-webkit-scrollbar,
-.variant-json-preview::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-.variant-form-tab-content::-webkit-scrollbar-track,
-.variant-json-preview::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.variant-form-tab-content::-webkit-scrollbar-thumb,
-.variant-json-preview::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
 }
 </style>

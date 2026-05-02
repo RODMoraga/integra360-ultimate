@@ -358,13 +358,12 @@
 
                 <div class="col-md-3">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="product-cost">Precio Costo</label>
-                  <input
+                  <NumberStepper
                     id="product-cost"
-                    v-model.number="form.cost_price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    :class="inputClass(formErrors.cost_price)"
+                    v-model="form.cost_price"
+                    :min="0"
+                    :step="0.01"
+                    :input-class="`${inputClass(formErrors.cost_price)} number-stepper-input`"
                     placeholder="0.00"
                     :aria-invalid="Boolean(formErrors.cost_price)"
                     @blur="validateField('cost_price')"
@@ -374,13 +373,12 @@
 
                 <div class="col-md-3">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="product-sale">Precio Venta <span class="text-danger">*</span></label>
-                  <input
+                  <NumberStepper
                     id="product-sale"
-                    v-model.number="form.sale_price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    :class="inputClass(formErrors.sale_price)"
+                    v-model="form.sale_price"
+                    :min="0"
+                    :step="0.01"
+                    :input-class="`${inputClass(formErrors.sale_price)} number-stepper-input`"
                     placeholder="0.00"
                     :aria-invalid="Boolean(formErrors.sale_price)"
                     aria-describedby="product-sale-error"
@@ -391,13 +389,12 @@
 
                 <div class="col-md-3">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="product-minprice">Precio Mínimo</label>
-                  <input
+                  <NumberStepper
                     id="product-minprice"
                     v-model="form.min_price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    :class="inputClass('')"
+                    :min="0"
+                    :step="0.01"
+                    :input-class="`${inputClass('')} number-stepper-input`"
                     placeholder="Opcional"
                   />
                   <p class="field-help">Precio mínimo permitido en descuentos.</p>
@@ -405,13 +402,12 @@
 
                 <div class="col-md-3">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="product-tax">Tasa de Impuesto</label>
-                  <input
+                  <NumberStepper
                     id="product-tax"
-                    v-model.number="form.tax_rate"
-                    type="number"
-                    min="0"
-                    step="0.0001"
-                    :class="inputClass('')"
+                    v-model="form.tax_rate"
+                    :min="0"
+                    :step="0.0001"
+                    :input-class="`${inputClass('')} number-stepper-input`"
                     placeholder="0.0000"
                   />
                   <p class="field-help">Ejemplo: 0.19 para IVA 19%.</p>
@@ -424,13 +420,12 @@
               <div class="row g-3">
                 <div class="col-md-3">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="product-minstock">Stock Mínimo</label>
-                  <input
+                  <NumberStepper
                     id="product-minstock"
-                    v-model.number="form.min_stock"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    :class="inputClass('')"
+                    v-model="form.min_stock"
+                    :min="0"
+                    :step="0.01"
+                    :input-class="`${inputClass('')} number-stepper-input`"
                     placeholder="0"
                   />
                   <p class="field-help">Nivel de alerta de reposición.</p>
@@ -547,6 +542,7 @@ import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
 import DashFooter from "../components/dashboard/DashFooter.vue";
 import CustomSelect from "../components/CustomSelect.vue";
+import NumberStepper from "../components/NumberStepper.vue";
 import { useProducts, useProductUnits, useCreateProduct, useUpdateProduct, useDeleteProduct } from "../composables/useProducts";
 import { useCategories } from "../composables/useCategories";
 import { useSubcategories } from "../composables/useSubcategories";

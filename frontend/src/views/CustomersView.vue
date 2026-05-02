@@ -373,13 +373,12 @@
               <div class="row g-3 customer-form-grid">
                 <div class="col-md-6">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="customer-payment-terms">Plazo Pago (días)</label>
-                  <input
+                  <NumberStepper
                     id="customer-payment-terms"
-                    v-model.number="form.payment_terms_days"
-                    type="number"
-                    min="0"
-                    max="365"
-                    :class="inputClass(formErrors.payment_terms_days)"
+                    v-model="form.payment_terms_days"
+                    :min="0"
+                    :max="365"
+                    :input-class="`${inputClass(formErrors.payment_terms_days)} number-stepper-input`"
                     :aria-invalid="Boolean(formErrors.payment_terms_days)"
                     aria-describedby="customer-payment-terms-help customer-payment-terms-error"
                     @blur="validateField('payment_terms_days')"
@@ -390,13 +389,12 @@
 
                 <div class="col-md-6">
                   <label class="block text-sm font-medium text-ink-black-700 mb-2" for="customer-credit-limit">Límite Crédito</label>
-                  <input
+                  <NumberStepper
                     id="customer-credit-limit"
-                    v-model.number="form.credit_limit"
-                    type="number"
-                    min="0"
-                    step="0.0001"
-                    :class="inputClass(formErrors.credit_limit)"
+                    v-model="form.credit_limit"
+                    :min="0"
+                    :step="0.0001"
+                    :input-class="`${inputClass(formErrors.credit_limit)} number-stepper-input`"
                     :aria-invalid="Boolean(formErrors.credit_limit)"
                     aria-describedby="customer-credit-limit-help customer-credit-limit-error"
                     @blur="validateField('credit_limit')"
@@ -474,6 +472,7 @@ import AppSidebar from "../components/dashboard/AppSidebar.vue";
 import DashNavbar from "../components/dashboard/DashNavbar.vue";
 import DashFooter from "../components/dashboard/DashFooter.vue";
 import CustomSelect from "../components/CustomSelect.vue";
+import NumberStepper from "../components/NumberStepper.vue";
 import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from "../composables/useCustomers";
 import { useCommunes } from "../composables/useCommunes";
 import type { CustomerItem } from "../services/customer.service";
@@ -1047,24 +1046,6 @@ const formatCurrency = (value: number) => {
 .customer-form-input-error {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 0.12rem rgba(220, 38, 38, 0.2);
-}
-
-.customer-form-tab-content::-webkit-scrollbar {
-  width: 5px;
-}
-
-.customer-form-tab-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.customer-form-tab-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 10px;
-}
-
-.customer-form-tab-content::-webkit-scrollbar-thumb:hover {
-  background: #999;
 }
 
 @media (max-width: 575.98px) {
