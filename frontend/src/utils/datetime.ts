@@ -1,6 +1,17 @@
 const APP_LOCALE = import.meta.env.VITE_APP_LOCALE ?? "es-CL";
 const APP_TIME_ZONE = import.meta.env.VITE_APP_TIME_ZONE ?? "America/Santiago";
 
+const toIsoDateInAppTimeZone = (date: Date) => {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+
+  return formatter.format(date);
+};
+
 const toDate = (value: string | Date | null | undefined): Date | null => {
   if (!value) {
     return null;
@@ -38,3 +49,10 @@ export const formatDateTime = (value: string | Date | null | undefined) => {
 };
 
 export const getAppTimeZone = () => APP_TIME_ZONE;
+
+export const getTodayIsoDate = () => toIsoDateInAppTimeZone(new Date());
+
+export const getFirstDayOfCurrentMonthIsoDate = () => {
+  const todayIso = getTodayIsoDate();
+  return `${todayIso.slice(0, 8)}01`;
+};

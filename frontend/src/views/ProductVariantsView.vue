@@ -79,7 +79,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="productVariantFormModal" tabindex="-1" aria-labelledby="productVariantFormModalLabel" aria-hidden="true" ref="formModalRef">
+  <div :class="['modal fade', isEditMode ? 'modal-variant-edit' : 'modal-variant-create']" id="productVariantFormModal" tabindex="-1" aria-labelledby="productVariantFormModalLabel" aria-hidden="true" ref="formModalRef">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content rounded-4 shadow">
         <div class="modal-header border-0 pb-0">

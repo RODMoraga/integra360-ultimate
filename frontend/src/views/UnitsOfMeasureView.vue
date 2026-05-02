@@ -181,8 +181,7 @@
   </div>
 
   <!-- ══════════════════════ CREATE / EDIT MODAL ══════════════════════ -->
-  <div
-    class="modal fade"
+  <div :class="['modal fade', isEditMode ? 'modal-variant-edit' : 'modal-variant-create']"
     id="uomFormModal"
     tabindex="-1"
     aria-labelledby="uomFormModalLabel"
@@ -641,7 +640,20 @@ async function submitForm() {
       await Swal.fire({ icon: "success", title: "Unidad creada", toast: true, position: "top-end", showConfirmButton: false, timer: 2500, timerProgressBar: true });
     }
   } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
     const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Ocurrió un error inesperado.";
+
+    if (status === 409 && /unidad base/i.test(msg)) {
+      await Swal.fire({
+        icon: "info",
+        title: "Unidad base ya definida",
+        html: `<p class="mb-2">${msg}</p><p class="mb-0">Sugerencia: edita primero la unidad base actual y desmarca la opción <strong>Unidad Base</strong>. Luego vuelve a guardar esta unidad como base.</p>`,
+        confirmButtonText: "Entendido",
+        customClass: { confirmButton: "btn btn-primary rounded-3 px-4" }
+      });
+      return;
+    }
+
     await Swal.fire({ icon: "error", title: "Error", text: msg, confirmButtonText: "Entendido", customClass: { confirmButton: "btn btn-primary rounded-3 px-4" } });
   } finally {
     isSaving.value = false;

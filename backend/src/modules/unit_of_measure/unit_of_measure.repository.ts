@@ -53,6 +53,22 @@ class UnitOfMeasureRepository {
   }
 
   /**
+   * Finds the current base unit for a given type and company.
+   * Optionally excludes one unit id from the search.
+   */
+  findBaseByType(companyId: bigint, unitType: string, excludeId?: bigint) {
+    return prisma.units_of_measure.findFirst({
+      where: {
+        company_id: companyId,
+        unit_type: unitType,
+        is_base_unit: true,
+        deleted_at: null,
+        ...(excludeId ? { id: { not: excludeId } } : {})
+      }
+    });
+  }
+
+  /**
    * Re-bases one unit as the only base unit for a given type in the company.
    * It runs atomically to avoid inconsistent base flags.
    */
@@ -64,6 +80,7 @@ class UnitOfMeasureRepository {
         where: {
           company_id: companyId,
           unit_type: unitType,
+          is_base_unit: true,
           deleted_at: null,
           id: { not: baseUnitId }
         },

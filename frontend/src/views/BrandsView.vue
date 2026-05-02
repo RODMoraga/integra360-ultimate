@@ -145,7 +145,7 @@
   </div>
 
   <!-- Form Modal -->
-  <div class="modal fade" id="brandFormModal" tabindex="-1" aria-labelledby="brandFormModalLabel" aria-hidden="true" ref="formModalRef">
+  <div :class="['modal fade', isEditMode ? 'modal-variant-edit' : 'modal-variant-create']" id="brandFormModal" tabindex="-1" aria-labelledby="brandFormModalLabel" aria-hidden="true" ref="formModalRef">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content rounded-4 shadow">
         <div class="modal-header border-0 pb-0">

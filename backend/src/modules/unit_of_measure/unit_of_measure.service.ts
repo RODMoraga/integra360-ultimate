@@ -1,5 +1,7 @@
+import { Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/app-error";
 import { toUtcIsoString } from "../../common/utils/datetime";
+import { logger } from "../../config/logger";
 import {
   unitOfMeasureRepository,
   CreateUnitOfMeasureInput,
@@ -31,6 +33,7 @@ class UnitOfMeasureService {
   /**
    * Creates a new unit of measure.
    * @throws AppError when `code` already exists for the company.
+   * @throws AppError (409) when another active base unit exists for the same type.
    */
   async create(
     companyId: bigint,
@@ -39,23 +42,41 @@ class UnitOfMeasureService {
     const existing = await unitOfMeasureRepository.findByCode(companyId, dto.code);
     if (existing) throw new AppError("El código de unidad ya existe para esta empresa", 409);
 
-    const data: CreateUnitOfMeasureInput = { ...dto, company_id: companyId };
-    let row = await unitOfMeasureRepository.create(data);
-
     if (dto.is_base_unit) {
-      row = await unitOfMeasureRepository.rebaseBaseUnit(
-        companyId,
-        dto.unit_type,
-        row.id
-      );
+      const existingBase = await unitOfMeasureRepository.findBaseByType(companyId, dto.unit_type);
+      if (existingBase) {
+        logger.warn(
+          { companyId: companyId.toString(), unit_type: dto.unit_type, conflictId: existingBase.id.toString() },
+          "create: is_base_unit conflict rejected (409)"
+        );
+        throw new AppError(
+          `Ya existe una unidad base para el tipo "${dto.unit_type}": ${existingBase.name} (${existingBase.code}). Desmarque esa unidad base antes de asignar otra.`,
+          409
+        );
+      }
     }
 
-    return this.serialize(row);
+    const data: CreateUnitOfMeasureInput = { ...dto, company_id: companyId };
+    try {
+      const row = await unitOfMeasureRepository.create(data);
+      logger.info({ id: row.id.toString(), is_base_unit: dto.is_base_unit }, "UnitOfMeasure created");
+      return this.serialize(row);
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        logger.error({ companyId: companyId.toString(), unit_type: dto.unit_type }, "create: DB unique constraint violation on is_base_unit");
+        throw new AppError(
+          `Ya existe una unidad base activa para el tipo "${dto.unit_type}". Desmarque esa unidad base antes de asignar otra.`,
+          409
+        );
+      }
+      throw err;
+    }
   }
 
   /**
    * Updates an existing unit of measure.
    * @throws AppError when the record does not exist.
+   * @throws AppError (409) when another active base unit exists for the same type.
    */
   async update(companyId: bigint, id: bigint, dto: UpdateUnitOfMeasureInput) {
     const existing = await unitOfMeasureRepository.findById(companyId, id);
@@ -64,16 +85,37 @@ class UnitOfMeasureService {
     const targetUnitType = dto.unit_type ?? existing.unit_type;
     const targetIsBase = dto.is_base_unit ?? existing.is_base_unit;
 
-    let updated = await unitOfMeasureRepository.update(id, dto);
     if (targetIsBase) {
-      updated = await unitOfMeasureRepository.rebaseBaseUnit(
-        companyId,
-        targetUnitType,
-        id
-      );
+      const existingBase = await unitOfMeasureRepository.findBaseByType(companyId, targetUnitType, id);
+      if (existingBase) {
+        logger.warn(
+          { companyId: companyId.toString(), id: id.toString(), unit_type: targetUnitType, conflictId: existingBase.id.toString() },
+          "update: is_base_unit conflict rejected (409)"
+        );
+        throw new AppError(
+          `Ya existe una unidad base para el tipo "${targetUnitType}": ${existingBase.name} (${existingBase.code}). Desmarque esa unidad base antes de asignar otra.`,
+          409
+        );
+      }
     }
 
-    return this.serialize(updated);
+    try {
+      const updated = await unitOfMeasureRepository.update(id, dto);
+      logger.info(
+        { id: id.toString(), is_base_unit: updated.is_base_unit, changed_fields: Object.keys(dto) },
+        "UnitOfMeasure updated"
+      );
+      return this.serialize(updated);
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        logger.error({ companyId: companyId.toString(), id: id.toString(), unit_type: targetUnitType }, "update: DB unique constraint violation on is_base_unit");
+        throw new AppError(
+          `Ya existe una unidad base activa para el tipo "${targetUnitType}". Desmarque esa unidad base antes de asignar otra.`,
+          409
+        );
+      }
+      throw err;
+    }
   }
 
   /**

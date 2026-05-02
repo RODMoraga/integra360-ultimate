@@ -183,8 +183,7 @@
   </div>
 
   <!-- ══════════════════════ CREATE / EDIT MODAL ══════════════════════ -->
-  <div
-    class="modal fade"
+  <div :class="['modal fade', isEditMode ? 'modal-variant-edit' : 'modal-variant-create']"
     id="cityFormModal"
     tabindex="-1"
     aria-labelledby="cityFormModalLabel"

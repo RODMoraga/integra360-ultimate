@@ -199,7 +199,7 @@
   </div>
 
   <!-- Form Modal (Create / Edit) -->
-  <div class="modal fade" id="inventoryFormModal" tabindex="-1" aria-labelledby="inventoryFormModalLabel" aria-hidden="true" ref="formModalRef">
+  <div :class="['modal fade', isEditMode ? 'modal-variant-edit' : 'modal-variant-create']" id="inventoryFormModal" tabindex="-1" aria-labelledby="inventoryFormModalLabel" aria-hidden="true" ref="formModalRef">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content rounded-4 shadow">
         <div class="modal-header border-0 pb-0">

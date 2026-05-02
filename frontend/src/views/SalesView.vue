@@ -129,7 +129,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="documentFormModal" tabindex="-1" aria-labelledby="documentFormModalLabel" aria-hidden="true" ref="formModalRef">
+  <div :class="['modal fade', isEditMode ? 'modal-variant-edit' : 'modal-variant-create']" id="documentFormModal" tabindex="-1" aria-labelledby="documentFormModalLabel" aria-hidden="true" ref="formModalRef">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content rounded-4 shadow">
         <div class="modal-header border-0 pb-0">
@@ -441,7 +441,7 @@ import {
   type SaleListFilters,
   type SaleStatus
 } from "../services/sale.service";
-import { formatDate } from "../utils/datetime";
+import { formatDate, getFirstDayOfCurrentMonthIsoDate, getTodayIsoDate } from "../utils/datetime";
 
 DataTable.use(DataTablesCore);
 
@@ -470,18 +470,21 @@ let formModalInstance: Modal | null = null;
 let viewModalInstance: Modal | null = null;
 let isComponentActive = true;
 
+const defaultStartDate = getFirstDayOfCurrentMonthIsoDate();
+const defaultEndDate = getTodayIsoDate();
+
 const draftFilters = reactive<SaleListFilters>({
   partner_name: "",
   status: "",
-  date_from: "",
-  date_to: ""
+  date_from: defaultStartDate,
+  date_to: defaultEndDate
 });
 
 const appliedFilters = reactive<SaleListFilters>({
   partner_name: "",
   status: "",
-  date_from: "",
-  date_to: ""
+  date_from: defaultStartDate,
+  date_to: defaultEndDate
 });
 
 const { data, isLoading, isError } = useSales(appliedFilters);
@@ -566,7 +569,7 @@ const emptyLine = (): DetailLineForm => ({
 
 const emptyForm = () => ({
   document_type_id: "",
-  document_date: new Date().toISOString().slice(0, 10),
+  document_date: getTodayIsoDate(),
   warehouse_id: "",
   customer_id: "",
   supplier_id: "",
@@ -671,8 +674,8 @@ function clearFilters() {
   Object.assign(draftFilters, {
     partner_name: "",
     status: "",
-    date_from: "",
-    date_to: ""
+    date_from: defaultStartDate,
+    date_to: defaultEndDate
   });
   applyFilters();
 }
