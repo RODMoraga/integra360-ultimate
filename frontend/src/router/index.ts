@@ -198,6 +198,16 @@ export const router = createRouter({
       }
     },
     {
+      path: "/inventario/stock",
+      name: "inventario-stock",
+      component: () => import("../views/InventoryView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Inventario - Integra360"
+      }
+    },
+    {
       path: "/inventario/categorias",
       name: "inventario-categorias",
       component: () => import("../views/CategoriesView.vue"),

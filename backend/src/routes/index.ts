@@ -26,6 +26,7 @@ import { documentSequenceRoutes } from "../modules/document_sequence/document_se
 import { documentRoutes } from "../modules/document/document.routes";
 import { posTerminalRoutes } from "../modules/pos_terminal/pos_terminal.routes";
 import { cashRegisterRoutes } from "../modules/cash_register/cash_register.routes";
+import { inventoryRoutes } from "../modules/inventory/inventory.routes";
 
 const router = Router();
 
@@ -60,5 +61,6 @@ router.use("/document-sequences", documentSequenceRoutes);
 router.use("/documents", documentRoutes);
 router.use("/pos-terminals", posTerminalRoutes);
 router.use("/cash-registers", cashRegisterRoutes);
+router.use("/inventory", inventoryRoutes);
 
 export const apiRoutes = router;

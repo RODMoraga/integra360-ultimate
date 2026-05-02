@@ -19,11 +19,14 @@
     "prisma:seed:documents": "prisma db execute --schema prisma/schema.prisma --file prisma/documents.seed.sql",
     "prisma:seed:pos-terminals": "prisma db execute --schema prisma/schema.prisma --file prisma/pos-terminals.seed.sql",
     "prisma:seed:cash-registers": "prisma db execute --schema prisma/schema.prisma --file prisma/cash-registers.seed.sql",
+    "prisma:seed:inventory": "prisma db execute --schema prisma/schema.prisma --file prisma/inventory.seed.sql",
     "smoke:documents": "node scripts/smoke-test-documents.mjs",
     "smoke:pos-terminals:run": "node scripts/smoke-test-pos-terminals.mjs",
     "smoke:pos-terminals": "npm run prisma:seed:pos-terminals && npm run smoke:pos-terminals:run",
     "smoke:cash-registers:run": "node scripts/smoke-test-cash-registers.mjs",
-    "smoke:cash-registers": "npm run prisma:seed:cash-registers && npm run smoke:cash-registers:run"
+    "smoke:cash-registers": "npm run prisma:seed:cash-registers && npm run smoke:cash-registers:run",
+    "smoke:inventory:run": "node scripts/smoke-test-inventory.mjs",
+    "smoke:inventory": "npm run prisma:seed:inventory && npm run smoke:inventory:run"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
