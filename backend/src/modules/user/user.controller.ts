@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { userService } from "./user.service";
-import { createUserSchema, updateUserSchema } from "./user.schema";
+import { createUserSchema, updateMyPasswordSchema, updateMyProfileSchema, updateUserSchema } from "./user.schema";
 import { AppError } from "../../common/errors/app-error";
 import { logger } from "../../config/logger";
 
@@ -26,6 +26,66 @@ class UserController {
     const companyId = BigInt(req.user?.companyId ?? 2);
     const roles = await userService.listRoles(companyId);
     res.status(200).json(roles);
+  }
+
+  /**
+   * GET /users/me
+   * Returns the authenticated user profile.
+   */
+  async getMe(req: Request, res: Response): Promise<void> {
+    const companyId = BigInt(req.user?.companyId ?? 2);
+    const userId = BigInt(req.user?.id ?? 0);
+    if (userId === 0n) {
+      throw new AppError("Usuario autenticado no válido", 401);
+    }
+
+    const user = await userService.getMe(companyId, userId);
+    res.status(200).json(user);
+  }
+
+  /**
+   * GET /users/me/audit
+   * Returns authenticated user's profile change audit history.
+   */
+  async getMyAudit(req: Request, res: Response): Promise<void> {
+    const companyId = BigInt(req.user?.companyId ?? 2);
+    const userId = BigInt(req.user?.id ?? 0);
+    if (userId === 0n) {
+      throw new AppError("Usuario autenticado no válido", 401);
+    }
+
+    const requestedLimit = Number(req.query.limit);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.max(1, Math.min(200, Math.trunc(requestedLimit)))
+      : 50;
+
+    const history = await userService.getMyAudit(companyId, userId, limit);
+    res.status(200).json(history);
+  }
+
+  /**
+   * PATCH /users/me
+   * Updates authenticated user's profile fields.
+   */
+  async updateMe(req: Request, res: Response): Promise<void> {
+    const parsed = updateMyProfileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const messages = parsed.error.errors.map((error) => error.message).join(", ");
+      throw new AppError(messages, 400);
+    }
+
+    const companyId = BigInt(req.user?.companyId ?? 2);
+    const userId = BigInt(req.user?.id ?? 0);
+    if (userId === 0n) {
+      throw new AppError("Usuario autenticado no válido", 401);
+    }
+
+    const user = await userService.updateMyProfile(companyId, userId, parsed.data, {
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") ?? undefined
+    });
+    logger.info({ userId: req.user?.id }, "User profile updated via /users/me");
+    res.status(200).json(user);
   }
 
   /**
@@ -75,6 +135,28 @@ class UserController {
     const user = await userService.update(companyId, id, parsed.data);
     logger.info({ userId: user.id }, "User updated");
     res.status(200).json(user);
+  }
+
+  /**
+   * PUT /users/me/password
+   * Rotates password for authenticated user after current-password verification.
+   */
+  async updateMyPassword(req: Request, res: Response): Promise<void> {
+    const parsed = updateMyPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const messages = parsed.error.errors.map((error) => error.message).join(", ");
+      throw new AppError(messages, 400);
+    }
+
+    const companyId = BigInt(req.user?.companyId ?? 2);
+    const userId = BigInt(req.user?.id ?? 0);
+    if (userId === 0n) {
+      throw new AppError("Usuario autenticado no válido", 401);
+    }
+
+    const result = await userService.updateMyPassword(companyId, userId, parsed.data);
+    logger.info({ userId: req.user?.id }, "User password updated via /users/me/password");
+    res.status(200).json(result);
   }
 
   /**

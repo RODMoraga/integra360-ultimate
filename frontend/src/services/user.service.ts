@@ -39,9 +39,55 @@ export interface UserPayload {
 }
 
 /**
+ * Payload for authenticated user's profile update.
+ */
+export interface UpdateMyProfilePayload {
+  full_name?: string;
+  email?: string;
+}
+
+/**
+ * Payload for authenticated user password rotation endpoint.
+ */
+export interface UpdateMyPasswordPayload {
+  current_password: string;
+  new_password: string;
+}
+
+/**
+ * Single audit log entry returned by GET /users/me/audit.
+ */
+export interface AuditEntry {
+  id: string;
+  changed_at: string;
+  changed_by: string;
+  changed_fields: string[];
+  old_data: { full_name?: string; email?: string };
+  new_data: { full_name?: string; email?: string };
+  ip_address: string | null;
+  user_agent: string | null;
+}
+
+/**
  * Client service for users endpoints.
  */
 export const userService = {
+  /**
+   * Retrieves currently authenticated user profile.
+   */
+  async getMe(): Promise<UserItem> {
+    const { data } = await api.get<UserItem>("/users/me");
+    return data;
+  },
+
+  /**
+   * Updates currently authenticated user profile.
+   */
+  async updateMe(payload: UpdateMyProfilePayload): Promise<UserItem> {
+    const { data } = await api.patch<UserItem>("/users/me", payload);
+    return data;
+  },
+
   /**
    * Retrieves users collection.
    */
@@ -87,6 +133,23 @@ export const userService = {
    */
   async update(id: string, payload: UserPayload): Promise<UserItem> {
     const { data } = await api.put<UserItem>(`/users/${id}`, payload);
+    return data;
+  },
+
+  /**
+   * Rotates password for the currently authenticated user.
+   */
+  async updateMyPassword(payload: UpdateMyPasswordPayload): Promise<{ message: string }> {
+    const { data } = await api.put<{ message: string }>("/users/me/password", payload);
+    return data;
+  },
+
+  /**
+   * Retrieves audit log entries for the currently authenticated user.
+   */
+  async getMyAudit(limit?: number): Promise<AuditEntry[]> {
+    const params = limit !== undefined ? { limit } : {};
+    const { data } = await api.get<AuditEntry[]>("/users/me/audit", { params });
     return data;
   },
 

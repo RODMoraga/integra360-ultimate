@@ -73,6 +73,7 @@
           <SidebarSubItem label="Marcas" to="/inventario/marcas" @click="$emit('close')" />
           <SidebarSubItem label="Modelos" to="/inventario/modelos" @click="$emit('close')" />
           <SidebarSubItem label="Unidades de Medida" to="/inventario/unidades-de-medida" @click="$emit('close')" />
+          <SidebarSubItem label="Conversiones de Unidades" to="/inventario/conversiones-unidades" @click="$emit('close')" />
           <SidebarSubItem label="Imágenes Productos" to="/inventario/imagenes-productos" @click="$emit('close')" />
           <SidebarSubItem label="Activos Digitales" to="/inventario/activos-digitales" @click="$emit('close')" />
         </SidebarGroup>
@@ -212,7 +213,8 @@ function toggleGroup(group: keyof typeof openGroups) {
  * Clears auth state and redirects to login page.
  */
 function handleLogout() {
+  sessionStore.clearSession();
   authService.logout();
-  router.push("/login");
+  router.replace("/login");
 }
 </script>

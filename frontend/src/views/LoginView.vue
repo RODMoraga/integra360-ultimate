@@ -228,12 +228,14 @@
 import { reactive, computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { authService, DEFAULT_COMPANY_ID } from "@/services/auth.service";
+import { useSessionStore } from "@/store/session.store";
 import { RouterLink } from "vue-router";
 
 /**
  * Router instance used for post-auth redirects.
  */
 const router = useRouter();
+const sessionStore = useSessionStore();
 
 /**
  * Reactive login form model.
@@ -324,6 +326,22 @@ const handleLogin = async () => {
 
     // Login successful
     if (response.accessToken) {
+      const payload = authService.getTokenPayload();
+      if (payload) {
+        authService.setUser({
+          id: payload.id,
+          email: payload.email,
+          companyId: payload.companyId,
+          role: "Usuario"
+        });
+
+        sessionStore.setSession(response.accessToken, {
+          id: payload.id,
+          email: payload.email,
+          role: "Usuario"
+        });
+      }
+
       // Redirect to dashboard
       await router.push("/dashboard");
     }

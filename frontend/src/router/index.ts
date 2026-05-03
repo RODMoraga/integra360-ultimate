@@ -199,6 +199,16 @@ export const router = createRouter({
       }
     },
     {
+      path: "/perfil",
+      name: "perfil",
+      component: () => import("../views/ProfileView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Perfil - Integra360"
+      }
+    },
+    {
       path: "/documentos",
       name: "documentos",
       component: () => import("../views/DocumentsView.vue"),
@@ -416,6 +426,16 @@ export const router = createRouter({
         requiresAuth: true,
         hideGlobalChrome: true,
         title: "Unidades de Medida - Integra360"
+      }
+    },
+    {
+      path: "/inventario/conversiones-unidades",
+      name: "inventario-conversiones-unidades",
+      component: () => import("../views/UnitConversionsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Conversiones de Unidades - Integra360"
       }
     }
   ]

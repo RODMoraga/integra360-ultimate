@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../config/database";
 
 /**
@@ -91,6 +92,26 @@ class UserRepository {
           deleted_at: null
         }
       });
+    });
+  }
+
+  /**
+   * Returns auth-sensitive fields for one user in company scope.
+   */
+  findAuthById(companyId: bigint, id: bigint) {
+    return prisma.users.findFirst({
+      where: {
+        id,
+        company_id: companyId,
+        deleted_at: null
+      },
+      select: {
+        id: true,
+        company_id: true,
+        email: true,
+        is_active: true,
+        password_hash: true
+      }
     });
   }
 
@@ -203,6 +224,23 @@ class UserRepository {
   }
 
   /**
+   * Updates only the password hash for one user.
+   */
+  updatePassword(companyId: bigint, id: bigint, passwordHash: string) {
+    return prisma.users.updateMany({
+      where: {
+        id,
+        company_id: companyId,
+        deleted_at: null
+      },
+      data: {
+        password_hash: passwordHash,
+        updated_at: new Date()
+      }
+    });
+  }
+
+  /**
    * Soft-deletes a user and clears active state.
    */
   softDelete(id: bigint) {
@@ -241,6 +279,64 @@ class UserRepository {
         where: { company_id: companyId, deleted_at: null },
         orderBy: { id: "desc" }
       });
+    });
+  }
+
+  /**
+   * Persists audit trace for authenticated self-profile updates.
+   */
+  createSelfProfileAuditLog(input: {
+    companyId: bigint;
+    userId: bigint;
+    oldData: Prisma.JsonObject;
+    newData: Prisma.JsonObject;
+    changedFields: string[];
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    return prisma.audit_logs.create({
+      data: {
+        company_id: input.companyId,
+        table_name: "users",
+        row_pk: input.userId.toString(),
+        action_type: "UPDATE",
+        changed_by: input.userId,
+        changed_at: new Date(),
+        old_data: input.oldData,
+        new_data: {
+          ...input.newData,
+          changed_fields: input.changedFields
+        },
+        ip_address: input.ipAddress,
+        user_agent: input.userAgent
+      }
+    });
+  }
+
+  /**
+   * Returns latest audit logs for one user's profile changes.
+   */
+  findSelfProfileAuditLogs(companyId: bigint, userId: bigint, limit = 50) {
+    return prisma.audit_logs.findMany({
+      where: {
+        company_id: companyId,
+        table_name: "users",
+        row_pk: userId.toString(),
+        action_type: "UPDATE"
+      },
+      orderBy: {
+        changed_at: "desc"
+      },
+      take: limit,
+      select: {
+        id: true,
+        changed_by: true,
+        changed_at: true,
+        old_data: true,
+        new_data: true,
+        ip_address: true,
+        user_agent: true
+      }
     });
   }
 }

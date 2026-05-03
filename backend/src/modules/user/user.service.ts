@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/app-error";
 import { toUtcIsoString } from "../../common/utils/datetime";
 import { userRepository } from "./user.repository";
-import type { CreateUserDto, UpdateUserDto } from "./user.schema";
+import type { CreateUserDto, UpdateMyPasswordDto, UpdateMyProfileDto, UpdateUserDto } from "./user.schema";
 
 /**
  * Business layer for user operations and role assignments.
@@ -26,6 +27,112 @@ class UserService {
       code: role.code,
       name: role.name
     }));
+  }
+
+  /**
+   * Retrieves current authenticated user profile in company scope.
+   */
+  async getMe(companyId: bigint, id: bigint) {
+    return this.getById(companyId, id);
+  }
+
+  /**
+   * Updates authenticated user's own profile fields (full_name/email).
+   */
+  async updateMyProfile(
+    companyId: bigint,
+    id: bigint,
+    dto: UpdateMyProfileDto,
+    auditMeta?: { ipAddress?: string; userAgent?: string }
+  ) {
+    const previous = await this.getById(companyId, id);
+
+    if (dto.email) {
+      const existing = await userRepository.findByEmail(companyId, dto.email, id);
+      if (existing) {
+        throw new AppError("El email ya se encuentra registrado", 409);
+      }
+    }
+
+    const updated = await userRepository.update(companyId, id, {
+      fullName: dto.full_name,
+      email: dto.email
+    });
+
+    if (!updated) {
+      throw new AppError("No fue posible actualizar el perfil", 500);
+    }
+
+    const serialized = this.serializeUser(updated);
+    const changedFields = ["full_name", "email"].filter((field) => {
+      if (field === "full_name") {
+        return previous.full_name !== serialized.full_name;
+      }
+      return previous.email !== serialized.email;
+    });
+
+    if (changedFields.length > 0) {
+      await userRepository.createSelfProfileAuditLog({
+        companyId,
+        userId: id,
+        oldData: {
+          full_name: previous.full_name,
+          email: previous.email
+        } as Prisma.JsonObject,
+        newData: {
+          full_name: serialized.full_name,
+          email: serialized.email
+        } as Prisma.JsonObject,
+        changedFields,
+        ipAddress: auditMeta?.ipAddress,
+        userAgent: auditMeta?.userAgent
+      });
+    }
+
+    return serialized;
+  }
+
+  /**
+   * Returns audit history for authenticated user's profile changes.
+   */
+  async getMyAudit(companyId: bigint, id: bigint, limit = 50) {
+    const rows = await userRepository.findSelfProfileAuditLogs(companyId, id, limit);
+
+    return rows
+      .map((row) => {
+        const oldData = (row.old_data ?? {}) as Record<string, unknown>;
+        const newData = (row.new_data ?? {}) as Record<string, unknown>;
+        const changedFieldsRaw = newData.changed_fields;
+        const changedFields = Array.isArray(changedFieldsRaw)
+          ? changedFieldsRaw.filter((item): item is string => typeof item === "string")
+          : [];
+
+        const isProfileChange =
+          changedFields.length === 0 ||
+          changedFields.some((field) => field === "full_name" || field === "email");
+
+        if (!isProfileChange) {
+          return null;
+        }
+
+        return {
+          id: row.id.toString(),
+          changed_at: toUtcIsoString(row.changed_at),
+          changed_by: row.changed_by ? row.changed_by.toString() : null,
+          changed_fields: changedFields,
+          old_data: {
+            full_name: oldData.full_name ?? null,
+            email: oldData.email ?? null
+          },
+          new_data: {
+            full_name: newData.full_name ?? null,
+            email: newData.email ?? null
+          },
+          ip_address: row.ip_address,
+          user_agent: row.user_agent
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row !== null);
   }
 
   /**
@@ -108,6 +215,33 @@ class UserService {
   async remove(companyId: bigint, id: bigint) {
     await this.getById(companyId, id);
     await userRepository.softDelete(id);
+  }
+
+  /**
+   * Changes authenticated user's password after validating current password.
+   */
+  async updateMyPassword(companyId: bigint, id: bigint, dto: UpdateMyPasswordDto) {
+    const user = await userRepository.findAuthById(companyId, id);
+    if (!user) {
+      throw new AppError("Usuario no encontrado", 404);
+    }
+
+    if (!user.is_active) {
+      throw new AppError("Usuario inactivo", 403);
+    }
+
+    const passwordMatches = await bcrypt.compare(dto.current_password, user.password_hash);
+    if (!passwordMatches) {
+      throw new AppError("La contraseña actual es incorrecta", 400);
+    }
+
+    const newPasswordHash = await bcrypt.hash(dto.new_password, 10);
+    const result = await userRepository.updatePassword(companyId, id, newPasswordHash);
+    if (result.count === 0) {
+      throw new AppError("No fue posible actualizar la contraseña", 500);
+    }
+
+    return { message: "Contraseña actualizada correctamente" };
   }
 
   /**

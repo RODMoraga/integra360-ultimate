@@ -15,6 +15,22 @@ router.get("/roles", requireAuth, (req, res, next) => {
   userController.listRoles(req, res).catch(next);
 });
 
+router.get("/me", requireAuth, (req, res, next) => {
+  userController.getMe(req, res).catch(next);
+});
+
+router.get("/me/audit", requireAuth, (req, res, next) => {
+  userController.getMyAudit(req, res).catch(next);
+});
+
+router.patch("/me", requireAuth, (req, res, next) => {
+  userController.updateMe(req, res).catch(next);
+});
+
+router.put("/me/password", requireAuth, (req, res, next) => {
+  userController.updateMyPassword(req, res).catch(next);
+});
+
 router.get("/:id", requireAuth, (req, res, next) => {
   userController.getById(req, res).catch(next);
 });

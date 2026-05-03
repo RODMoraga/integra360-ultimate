@@ -31,6 +31,18 @@ export interface AuthUser {
   email: string;
   fullName?: string;
   companyId?: number;
+  role?: string;
+}
+
+/**
+ * Decoded JWT payload shape used by frontend session bootstrap.
+ */
+export interface TokenPayload {
+  id: number;
+  email: string;
+  companyId: number;
+  iat?: number;
+  exp?: number;
 }
 
 /**
@@ -70,6 +82,22 @@ class AuthService {
       }
 
       return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Validates credentials without persisting or mutating the current session.
+   */
+  async verifyCredentials(credentials: LoginRequest): Promise<boolean> {
+    try {
+      await api.post<LoginResponse>("/auth/login", {
+        email: credentials.email,
+        password: credentials.password,
+        companyId: credentials.companyId ?? DEFAULT_COMPANY_ID
+      });
+      return true;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -150,6 +178,58 @@ class AuthService {
   getUser(): AuthUser | null {
     const user = localStorage.getItem(this.USER_KEY);
     return user ? JSON.parse(user) : null;
+  }
+
+  /**
+   * Decodes the current JWT payload (base64url) without external libraries.
+   */
+  getTokenPayload(): TokenPayload | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+
+    const [, payloadSegment] = token.split(".");
+    if (!payloadSegment) {
+      return null;
+    }
+
+    try {
+      const base64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+      const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+      const json = atob(padded);
+      const parsed = JSON.parse(json) as TokenPayload;
+
+      if (!parsed?.id || !parsed?.email || !parsed?.companyId) {
+        return null;
+      }
+
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Returns current authenticated user from persisted profile or JWT payload fallback.
+   */
+  getCurrentUser(): AuthUser | null {
+    const persisted = this.getUser();
+    if (persisted?.id && persisted?.email) {
+      return persisted;
+    }
+
+    const payload = this.getTokenPayload();
+    if (!payload) {
+      return null;
+    }
+
+    return {
+      id: payload.id,
+      email: payload.email,
+      companyId: payload.companyId,
+      role: persisted?.role ?? "Usuario"
+    };
   }
 
   /**

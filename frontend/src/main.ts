@@ -7,6 +7,7 @@ import VueApexCharts from "vue3-apexcharts";
 import { Tooltip } from "bootstrap";
 import App from "./App.vue";
 import { authService } from "./services/auth.service";
+import { useSessionStore } from "./store/session.store";
 import { router } from "./router";
 import "./style.css";
 
@@ -103,8 +104,9 @@ function initializeActionButtonTooltips() {
  */
 const app = createApp(App);
 const queryClient = new QueryClient();
+const pinia = createPinia();
 
-app.use(createPinia());
+app.use(pinia);
 app.use(router);
 app.use(VueQueryPlugin, { queryClient });
 app.use(PrimeVue, {
@@ -113,6 +115,17 @@ app.use(PrimeVue, {
   }
 });
 app.component("ApexChart", VueApexCharts);
+
+const currentUser = authService.getCurrentUser();
+if (currentUser) {
+  const sessionStore = useSessionStore(pinia);
+  sessionStore.setSession(authService.getToken() ?? "", {
+    id: currentUser.id,
+    email: currentUser.email,
+    role: currentUser.role ?? "Usuario"
+  });
+}
+
 initializeActionButtonTooltips();
 router.afterEach(() => {
   hideVisibleActionTooltips();
