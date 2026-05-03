@@ -33,6 +33,8 @@
     "smoke:cash-registers": "npm run prisma:seed:cash-registers && npm run smoke:cash-registers:run",
     "smoke:inventory:run": "node scripts/smoke-test-inventory.mjs",
     "smoke:inventory": "npm run prisma:seed:inventory && npm run smoke:inventory:run",
+    "smoke:inventory-movements:run": "node scripts/smoke-test-inventory-movements.mjs",
+    "smoke:inventory-movements": "npm run prisma:seed:inventory && npm run smoke:inventory-movements:run",
     "smoke:sales:run": "node scripts/smoke-test-sales.mjs",
     "smoke:sales": "npm run prisma:seed:document-sequences && npm run smoke:sales:run",
     "smoke:inventory:automation": "node scripts/smoke-test-inventory-automation.mjs",

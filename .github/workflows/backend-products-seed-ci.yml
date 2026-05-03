@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "backend/**"
+      - "backend/scripts/smoke-test-inventory-movements.mjs"
       - ".github/workflows/backend-products-seed-ci.yml"
   push:
     branches:
       - main
     paths:
       - "backend/**"
+      - "backend/scripts/smoke-test-inventory-movements.mjs"
       - ".github/workflows/backend-products-seed-ci.yml"
 
 jobs:
@@ -59,3 +61,45 @@ jobs:
       - name: Run products seed CI flow
         working-directory: backend
         run: npm run prisma:seed:products:ci
+
+      - name: Seed inventory for smoke
+        working-directory: backend
+        run: npm run prisma:seed:inventory
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Start backend API
+        working-directory: backend
+        run: |
+          nohup node dist/main.js > /tmp/backend.log 2>&1 &
+          echo $! > /tmp/backend.pid
+
+      - name: Wait for API health
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/api/health > /dev/null; then
+              echo "API is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API failed to start"
+          cat /tmp/backend.log || true
+          exit 1
+
+      - name: Run inventory movements smoke
+        working-directory: backend
+        run: npm run smoke:inventory-movements:run
+
+      - name: Show backend logs on failure
+        if: failure()
+        run: cat /tmp/backend.log || true
+
+      - name: Stop backend API
+        if: always()
+        run: |
+          if [ -f /tmp/backend.pid ]; then
+            kill "$(cat /tmp/backend.pid)" || true
+          fi

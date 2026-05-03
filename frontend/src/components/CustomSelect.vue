@@ -13,6 +13,7 @@
     <div class="relative">
       <!-- Input Display & Toggle -->
       <button
+        ref="triggerRef"
         :id="id"
         type="button"
         @click="toggleDropdown"
@@ -41,8 +42,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
       </button>
+    </div>
 
-      <!-- Dropdown Menu -->
+    <!-- Dropdown Menu rendered in body to avoid clipping by overflow containers -->
+    <Teleport :to="teleportTarget">
       <Transition
         enter-active-class="transition ease-out duration-100"
         enter-from-class="transform opacity-0 scale-95"
@@ -53,7 +56,9 @@
       >
         <div
           v-if="isOpen"
-          class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-lg"
+          ref="dropdownRef"
+          :style="dropdownStyles"
+          class="custom-select-dropdown bg-white border border-slate-200 rounded-lg shadow-lg"
         >
           <!-- Search Input (si searchable) -->
           <div v-if="searchable" class="p-3 border-b border-slate-200 sticky top-0 bg-white rounded-t-lg">
@@ -111,7 +116,7 @@
           </div>
         </div>
       </Transition>
-    </div>
+    </Teleport>
 
     <!-- Helper Text -->
     <p v-if="helperText" class="mt-2 text-xs text-slate-500">
@@ -181,6 +186,10 @@ const searchQuery = ref("");
 const highlightedIndex = ref(0);
 const searchInput = ref<HTMLInputElement | null>(null);
 const containerRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLElement | null>(null);
+const dropdownRef = ref<HTMLElement | null>(null);
+const dropdownStyles = ref<Record<string, string>>({});
+const teleportTarget = ref("body");
 
 /**
  * Filters options by disabled state and optional search query.
@@ -221,7 +230,11 @@ const toggleDropdown = () => {
     if (isOpen.value) {
       searchQuery.value = "";
       highlightedIndex.value = 0;
-      nextTick(() => searchInput.value?.focus());
+      resolveTeleportTarget();
+      nextTick(() => {
+        updateDropdownPosition();
+        searchInput.value?.focus();
+      });
     }
   }
 };
@@ -231,6 +244,64 @@ const toggleDropdown = () => {
  */
 const closeDropdown = () => {
   isOpen.value = false;
+};
+
+/**
+ * Uses body by default, but keeps dropdown inside modal to preserve Bootstrap focus trap.
+ */
+const resolveTeleportTarget = () => {
+  const triggerEl = triggerRef.value;
+  if (!triggerEl) {
+    teleportTarget.value = "body";
+    return;
+  }
+
+  const modalEl = triggerEl.closest(".modal") as HTMLElement | null;
+  if (!modalEl) {
+    teleportTarget.value = "body";
+    return;
+  }
+
+  if (modalEl.id) {
+    teleportTarget.value = `#${modalEl.id}`;
+    return;
+  }
+
+  teleportTarget.value = "body";
+};
+
+/**
+ * Positions teleported dropdown near trigger and keeps it inside viewport.
+ */
+const updateDropdownPosition = () => {
+  if (!triggerRef.value) return;
+
+  const rect = triggerRef.value.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const spacing = 8;
+  const defaultWidth = Math.max(rect.width, 220);
+  const availableBelow = viewportHeight - rect.bottom - spacing;
+  const availableAbove = rect.top - spacing;
+  const shouldOpenAbove = availableBelow < 220 && availableAbove > availableBelow;
+  const maxHeight = Math.max(160, shouldOpenAbove ? availableAbove : availableBelow);
+
+  let left = rect.left;
+  if (left + defaultWidth > viewportWidth - spacing) {
+    left = Math.max(spacing, viewportWidth - defaultWidth - spacing);
+  }
+
+  dropdownStyles.value = {
+    position: "fixed",
+    left: `${Math.round(left)}px`,
+    width: `${Math.round(defaultWidth)}px`,
+    maxHeight: `${Math.round(Math.min(maxHeight, 360))}px`,
+    overflow: "hidden",
+    zIndex: "3000",
+    top: shouldOpenAbove
+      ? `${Math.max(spacing, Math.round(rect.top - Math.min(maxHeight, 360) - spacing))}px`
+      : `${Math.round(rect.bottom + spacing)}px`
+  };
 };
 
 /**
@@ -298,8 +369,20 @@ const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as Node | null;
   if (!target || !containerRef.value) return;
 
-  if (!containerRef.value.contains(target)) {
+  const clickedInsideContainer = containerRef.value.contains(target);
+  const clickedInsideDropdown = !!dropdownRef.value?.contains(target);
+
+  if (!clickedInsideContainer && !clickedInsideDropdown) {
     closeDropdown();
+  }
+};
+
+/**
+ * Keeps dropdown aligned while page/modals/tables scroll or viewport changes.
+ */
+const handleViewportChange = () => {
+  if (isOpen.value) {
+    updateDropdownPosition();
   }
 };
 
@@ -309,8 +392,12 @@ const handleClickOutside = (event: MouseEvent) => {
 watch(isOpen, (newValue) => {
   if (newValue) {
     document.addEventListener("click", handleClickOutside);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
   } else {
     document.removeEventListener("click", handleClickOutside);
+    window.removeEventListener("resize", handleViewportChange);
+    window.removeEventListener("scroll", handleViewportChange, true);
   }
 });
 
@@ -319,10 +406,16 @@ watch(isOpen, (newValue) => {
  */
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
+  window.removeEventListener("resize", handleViewportChange);
+  window.removeEventListener("scroll", handleViewportChange, true);
 });
 </script>
 
 <style scoped>
+.custom-select-dropdown {
+  transform-origin: top center;
+}
+
 /* Smooth animations */
 ::-webkit-scrollbar {
   width: 6px;

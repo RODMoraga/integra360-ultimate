@@ -52,6 +52,11 @@ export interface UpdateDocumentInput {
   confirmed_at?: Date | null;
 }
 
+export interface InventoryScopeInput {
+  warehouse_id: bigint;
+  product_variant_id: bigint;
+}
+
 const documentInclude = {
   document_types: {
     select: {
@@ -168,7 +173,8 @@ class DocumentRepository {
         id: true,
         code: true,
         name: true,
-        counterpart_scope: true
+        counterpart_scope: true,
+        affects_inventory: true
       }
     });
   }
@@ -207,6 +213,27 @@ class DocumentRepository {
         products: {
           select: { id: true, sku: true, name: true }
         }
+      }
+    });
+  }
+
+  findInventoryByScopes(companyId: bigint, scopes: InventoryScopeInput[]) {
+    if (scopes.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return prisma.inventory.findMany({
+      where: {
+        company_id: companyId,
+        OR: scopes.map((scope) => ({
+          warehouse_id: scope.warehouse_id,
+          product_variant_id: scope.product_variant_id
+        }))
+      },
+      select: {
+        warehouse_id: true,
+        product_variant_id: true,
+        quantity_available: true
       }
     });
   }

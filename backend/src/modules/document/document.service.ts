@@ -6,6 +6,7 @@ import {
   type CreateDocumentDetailInput,
   type CreateDocumentInput,
   type DocumentListFilters,
+  type InventoryScopeInput,
   type UpdateDocumentInput
 } from "./document.repository";
 import type { CreateDocumentDto, UpdateDocumentDto } from "./document.schema";
@@ -48,6 +49,24 @@ class DocumentService {
     }
 
     const status = dto.status ?? "DRAFT";
+    this.validateInventoryAutomationPreconditions(
+      documentType.affects_inventory,
+      status,
+      dto.warehouse_id,
+      dto.details ?? []
+    );
+
+    await this.validateInventoryAvailability(
+      companyId,
+      documentType.code,
+      documentType.counterpart_scope,
+      "DRAFT",
+      status,
+      [],
+      this.toStockLines(dto.details ?? [], dto.warehouse_id),
+      "creación"
+    );
+
     const confirmedAt = status === "CONFIRMED" ? new Date() : null;
 
     const created = await documentRepository.createWithDetails(sequence.id, {
@@ -89,6 +108,43 @@ class DocumentService {
     await this.validateWarehouses(companyId, dto.warehouse_id, dto.details ?? []);
 
     const nextStatus = dto.status ?? current.status;
+    const nextHeaderWarehouseId = dto.warehouse_id !== undefined
+      ? dto.warehouse_id
+      : (current.warehouse_id ? Number(current.warehouse_id) : undefined);
+    const effectiveDetailsForValidation = dto.details ?? current.document_details.map((detail) => ({
+      product_variant_id: Number(detail.product_variant_id),
+      warehouse_id: detail.warehouse_id ? Number(detail.warehouse_id) : undefined,
+      quantity: Number(detail.quantity),
+      unit_price: Number(detail.unit_price),
+      discount_amount: Number(detail.discount_amount),
+      tax_amount: Number(detail.tax_amount)
+    }));
+
+    this.validateInventoryAutomationPreconditions(
+      documentType.affects_inventory,
+      nextStatus,
+      nextHeaderWarehouseId,
+      effectiveDetailsForValidation
+    );
+
+    await this.validateInventoryAvailability(
+      companyId,
+      documentType.code,
+      documentType.counterpart_scope,
+      current.status,
+      nextStatus,
+      this.toStockLines(
+        current.document_details.map((detail) => ({
+          product_variant_id: Number(detail.product_variant_id),
+          warehouse_id: detail.warehouse_id ? Number(detail.warehouse_id) : undefined,
+          quantity: Number(detail.quantity)
+        })),
+        current.warehouse_id ? Number(current.warehouse_id) : undefined
+      ),
+      this.toStockLines(effectiveDetailsForValidation, nextHeaderWarehouseId),
+      "actualización"
+    );
+
     const confirmedAt = nextStatus === "CONFIRMED"
       ? (current.confirmed_at ?? new Date())
       : null;
@@ -135,6 +191,164 @@ class DocumentService {
     }
 
     return this.getById(companyId, id);
+  }
+
+  private validateInventoryAutomationPreconditions(
+    affectsInventory: boolean,
+    status: documents_status,
+    headerWarehouseId: number | undefined,
+    details: Array<{ warehouse_id?: number }>
+  ) {
+    if (!affectsInventory || status !== "CONFIRMED") {
+      return;
+    }
+
+    for (let index = 0; index < details.length; index += 1) {
+      const lineWarehouseId = details[index].warehouse_id;
+      if (!lineWarehouseId && !headerWarehouseId) {
+        throw new AppError(
+          `El documento confirmado afecta inventario y requiere bodega en encabezado o en cada detalle (línea ${index + 1}).`,
+          400
+        );
+      }
+    }
+  }
+
+  private async validateInventoryAvailability(
+    companyId: bigint,
+    documentTypeCode: string,
+    counterpartScope: document_types_counterpart_scope,
+    currentStatus: documents_status,
+    nextStatus: documents_status,
+    currentDetails: StockLineInput[],
+    nextDetails: StockLineInput[],
+    operationLabel: "creación" | "actualización"
+  ) {
+    if (currentStatus === nextStatus && nextStatus !== "CONFIRMED") {
+      return;
+    }
+
+    const movementSign = this.resolveInventorySign(documentTypeCode, counterpartScope);
+    const deltas = this.computeStockDeltas(movementSign, currentStatus, nextStatus, currentDetails, nextDetails);
+    if (deltas.size === 0) {
+      return;
+    }
+
+    const scopes: InventoryScopeInput[] = [];
+
+    for (const [key, value] of deltas.entries()) {
+      if (value === 0) {
+        continue;
+      }
+
+      const [warehouseId, productVariantId] = key.split("|").map((part) => BigInt(part));
+      scopes.push({ warehouse_id: warehouseId, product_variant_id: productVariantId });
+    }
+
+    if (scopes.length === 0) {
+      return;
+    }
+
+    const inventoryRows = await documentRepository.findInventoryByScopes(companyId, scopes);
+    const availableByScope = new Map<string, number>();
+
+    inventoryRows.forEach((row) => {
+      const key = `${row.warehouse_id.toString()}|${row.product_variant_id.toString()}`;
+      availableByScope.set(key, Number(row.quantity_available ?? 0));
+    });
+
+    for (const [key, delta] of deltas.entries()) {
+      if (delta >= 0) {
+        continue;
+      }
+
+      const currentAvailable = availableByScope.get(key) ?? 0;
+      const projected = currentAvailable + delta;
+
+      if (projected < 0) {
+        const [warehouseId, productVariantId] = key.split("|");
+        const requested = Math.abs(delta);
+        throw new AppError(
+          `Stock insuficiente para ${operationLabel} de documento confirmado (bodega ${warehouseId}, variante ${productVariantId}). Disponible: ${currentAvailable.toFixed(4)}, requerido: ${requested.toFixed(4)}.`,
+          409,
+          {
+            warehouse_id: warehouseId,
+            product_variant_id: productVariantId,
+            available: currentAvailable,
+            required: requested,
+            projected
+          }
+        );
+      }
+    }
+  }
+
+  private resolveInventorySign(documentTypeCode: string, counterpartScope: document_types_counterpart_scope): 1 | -1 {
+    const isReturnLike = /DEV|RETURN|CREDIT|NC/i.test(documentTypeCode);
+
+    if (isReturnLike) {
+      if (counterpartScope === "SUPPLIER") return -1;
+      if (counterpartScope === "CUSTOMER") return 1;
+      return -1;
+    }
+
+    if (counterpartScope === "SUPPLIER") return 1;
+    if (counterpartScope === "CUSTOMER") return -1;
+    return 1;
+  }
+
+  private toStockLines(
+    details: Array<{ product_variant_id: number; warehouse_id?: number; quantity: number }>,
+    headerWarehouseId: number | undefined
+  ): StockLineInput[] {
+    return details.map((detail, index) => {
+      const effectiveWarehouseId = detail.warehouse_id ?? headerWarehouseId;
+      if (!effectiveWarehouseId) {
+        throw new AppError(
+          `El documento afecta inventario y requiere bodega en encabezado o detalle (línea ${index + 1}).`,
+          400
+        );
+      }
+
+      return {
+        warehouse_id: BigInt(effectiveWarehouseId),
+        product_variant_id: BigInt(detail.product_variant_id),
+        quantity: Number(detail.quantity)
+      };
+    });
+  }
+
+  private computeStockDeltas(
+    movementSign: 1 | -1,
+    currentStatus: documents_status,
+    nextStatus: documents_status,
+    currentDetails: StockLineInput[],
+    nextDetails: StockLineInput[]
+  ) {
+    const deltas = new Map<string, number>();
+
+    const apply = (line: StockLineInput, signedQuantity: number) => {
+      const key = `${line.warehouse_id.toString()}|${line.product_variant_id.toString()}`;
+      const current = deltas.get(key) ?? 0;
+      deltas.set(key, current + signedQuantity);
+    };
+
+    if (currentStatus !== "CONFIRMED" && nextStatus === "CONFIRMED") {
+      nextDetails.forEach((line) => apply(line, movementSign * line.quantity));
+      return deltas;
+    }
+
+    if (currentStatus === "CONFIRMED" && nextStatus !== "CONFIRMED") {
+      currentDetails.forEach((line) => apply(line, -movementSign * line.quantity));
+      return deltas;
+    }
+
+    if (currentStatus === "CONFIRMED" && nextStatus === "CONFIRMED") {
+      currentDetails.forEach((line) => apply(line, -movementSign * line.quantity));
+      nextDetails.forEach((line) => apply(line, movementSign * line.quantity));
+    }
+
+    return deltas;
   }
 
   async remove(companyId: bigint, id: bigint) {
@@ -347,6 +561,12 @@ class DocumentService {
       }))
     };
   }
+}
+
+interface StockLineInput {
+  warehouse_id: bigint;
+  product_variant_id: bigint;
+  quantity: number;
 }
 
 export const documentService = new DocumentService();

@@ -1,0 +1,2 @@
+-- No remediable rows were found.
+-- Audit report indicates there is nothing to insert for NO_MOVEMENT_REGISTERED.

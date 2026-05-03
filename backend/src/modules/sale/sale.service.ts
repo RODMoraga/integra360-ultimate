@@ -42,6 +42,10 @@ class SaleService {
     if (row.counterpart_scope === "SUPPLIER") {
       throw new AppError("El tipo de documento seleccionado corresponde a proveedor y no a venta", 400);
     }
+
+    if (!row.affects_inventory) {
+      throw new AppError("El tipo de documento de venta debe afectar inventario para registrar salidas automáticas", 400);
+    }
   }
 }
 

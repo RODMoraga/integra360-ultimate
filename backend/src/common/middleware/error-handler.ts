@@ -42,6 +42,13 @@ export const errorHandler = (
     return;
   }
 
+  if (typeof err.message === "string" && err.message.includes("chk_inventory_non_negative")) {
+    res.status(409).json({
+      message: "Stock insuficiente para completar la operacion solicitada. Verifique disponibilidad en inventario."
+    });
+    return;
+  }
+
   logger.error({ err }, "Unexpected error");
   res.status(500).json({ message: "Internal server error" });
 };

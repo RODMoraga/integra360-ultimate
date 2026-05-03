@@ -66,6 +66,8 @@
         <!-- Inventario -->
         <SidebarGroup icon="fa-solid fa-boxes-stacked" label="Inventario" :open="openGroups.inventario" @toggle="toggleGroup('inventario')">
           <SidebarSubItem label="Stock" to="/inventario/stock" @click="$emit('close')" />
+          <SidebarSubItem label="Movimientos" to="/inventario/movimientos" @click="$emit('close')" />
+          <SidebarSubItem label="Tipos de Movimiento" to="/inventario/tipos-movimiento" @click="$emit('close')" />
           <SidebarSubItem label="Productos" to="/inventario/productos" @click="$emit('close')" />
           <SidebarSubItem label="Variantes de Productos" to="/inventario/variantes-productos" @click="$emit('close')" />
           <SidebarSubItem label="Categorías" to="/inventario/categorias" @click="$emit('close')" />

@@ -369,6 +369,26 @@ export const router = createRouter({
       }
     },
     {
+      path: "/inventario/movimientos",
+      name: "inventario-movimientos",
+      component: () => import("../views/InventoryMovementsView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Movimientos de Inventario - Integra360"
+      }
+    },
+    {
+      path: "/inventario/tipos-movimiento",
+      name: "inventario-tipos-movimiento",
+      component: () => import("../views/InventoryMovementTypesView.vue"),
+      meta: {
+        requiresAuth: true,
+        hideGlobalChrome: true,
+        title: "Tipos de Movimiento de Inventario - Integra360"
+      }
+    },
+    {
       path: "/inventario/variantes-productos",
       name: "inventario-variantes-productos",
       component: () => import("../views/ProductVariantsView.vue"),
