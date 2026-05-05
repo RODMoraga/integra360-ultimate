@@ -5,6 +5,7 @@ on:
     paths:
       - "backend/**"
       - "backend/scripts/smoke-test-inventory-movements.mjs"
+      - "backend/scripts/smoke-preflight-inventory-movements.mjs"
       - ".github/workflows/backend-products-seed-ci.yml"
   push:
     branches:
@@ -12,6 +13,7 @@ on:
     paths:
       - "backend/**"
       - "backend/scripts/smoke-test-inventory-movements.mjs"
+      - "backend/scripts/smoke-preflight-inventory-movements.mjs"
       - ".github/workflows/backend-products-seed-ci.yml"
 
 jobs:
@@ -89,9 +91,13 @@ jobs:
           cat /tmp/backend.log || true
           exit 1
 
-      - name: Run inventory movements smoke
+      - name: Validate inventory-movements route preflight
         working-directory: backend
-        run: npm run smoke:inventory-movements:run
+        run: npm run smoke:inventory-movements:preflight
+
+      - name: Run inventory-movements smoke suite
+        working-directory: backend
+        run: node scripts/smoke-test-inventory-movements.mjs
 
       - name: Show backend logs on failure
         if: failure()

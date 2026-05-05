@@ -31,6 +31,7 @@ import { inventoryRoutes } from "../modules/inventory/inventory.routes";
 import { inventoryMovementTypeRoutes } from "../modules/inventory_movement_type/inventory_movement_type.routes";
 import { inventoryMovementRoutes } from "../modules/inventory_movement/inventory_movement.routes";
 import { saleRoutes } from "../modules/sale/sale.routes";
+import { reportRoutes } from "../modules/report/report.routes";
 
 const router = Router();
 
@@ -70,5 +71,6 @@ router.use("/inventory", inventoryRoutes);
 router.use("/inventory-movement-types", inventoryMovementTypeRoutes);
 router.use("/inventory-movements", inventoryMovementRoutes);
 router.use("/sales", saleRoutes);
+router.use("/reports", reportRoutes);
 
 export const apiRoutes = router;

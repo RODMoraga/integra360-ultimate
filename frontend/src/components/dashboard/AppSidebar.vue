@@ -85,13 +85,10 @@
       <div class="px-3 mb-2 mt-4">
         <p class="text-xs font-semibold uppercase tracking-widest text-ink-black-300 px-3 mb-2">Análisis</p>
 
-        <SidebarItem
-          icon="fa-solid fa-chart-line"
-          label="Reportes"
-          to="/reportes"
-          :active="currentPath === '/reportes'"
-          @click="$emit('close')"
-        />
+        <!-- Reportes -->
+        <SidebarGroup icon="fa-solid fa-chart-line" label="Reportes" :open="openGroups.reportes" @toggle="toggleGroup('reportes')">
+          <SidebarSubItem label="Ventas Diarias" to="/reportes/ventas-diarias" @click="$emit('close')" />
+        </SidebarGroup>
 
         <SidebarItem
           icon="fa-solid fa-calendar-days"
@@ -198,6 +195,7 @@ const openGroups = reactive({
   clientes: false,
   proveedores: false,
   inventario: false,
+  reportes: false,
   administracion: false,
   documentos: false,
   infraestructura: false,

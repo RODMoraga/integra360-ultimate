@@ -60,6 +60,7 @@ function run() {
   // Execute smoke tests.
   runStep("Smoke documents", "node", smokeArgs("scripts/smoke-test-documents.mjs"));
   runStep("Smoke inventory", "node", smokeArgs("scripts/smoke-test-inventory.mjs"));
+  runStep("Preflight inventory-movements", "node", smokeArgs("scripts/smoke-preflight-inventory-movements.mjs"));
   runStep("Smoke inventory-movements", "node", smokeArgs("scripts/smoke-test-inventory-movements.mjs"));
   runStep("Smoke cash-registers", "node", smokeArgs("scripts/smoke-test-cash-registers.mjs"));
   runStep("Smoke sales", "node", smokeArgs("scripts/smoke-test-sales.mjs"));

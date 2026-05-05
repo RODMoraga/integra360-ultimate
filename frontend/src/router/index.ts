@@ -170,12 +170,16 @@ export const router = createRouter({
     },
     {
       path: "/reportes",
-      name: "reportes",
-      component: () => import("../views/DashboardPlaceholderView.vue"),
+      redirect: "/reportes/ventas-diarias"
+    },
+    {
+      path: "/reportes/ventas-diarias",
+      name: "reportes-ventas-diarias",
+      component: () => import("../views/SalesReportView.vue"),
       meta: {
         requiresAuth: true,
         hideGlobalChrome: true,
-        title: "Reportes - Integra360"
+        title: "Ventas Diarias - Reportes - Integra360"
       }
     },
     {
